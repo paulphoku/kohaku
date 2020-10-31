@@ -193,7 +193,7 @@ app.post('/updatePassword', (req, res, next) => {
     );
 })
 
-//update password
+//reset password
 app.get('/resetPassword/:email', (req, res, next) => {
     var email = req.params.email;
     var plaint_password = uuid.v4().substr(0, 8);
@@ -226,8 +226,8 @@ app.get('/verifyemail/:uuid', (req, res, next) => {
             res.send({ msg: "Could not change password", status: 1 });
         }
         if (rows1.length > 0 && rows1[0].isVerified == 0) {
-            db.query("UPDATE `user` SET`isVerified` =? WHERE uuid = ?", [1,uid], function (err, rows, fields) {
-                res.send({ msg: "Done", status: 0 , data: rows});
+            db.query("UPDATE `user` SET`isVerified` =? WHERE uuid = ?", [1, uid], function (err, rows, fields) {
+                res.send({ msg: "Done", status: 0, data: rows });
             });
         } else {
             res.send({ msg: "Email: " + rows1[0].email + " alredy verified", status: 1 });
@@ -235,22 +235,48 @@ app.get('/verifyemail/:uuid', (req, res, next) => {
     });
 })
 
-//update password
+//delete user
 app.post('/delete_user/:uuid', (req, res, next) => {
     var uid = req.params.uuid;
-    db.query("DELETE FROM `user` WHERE `user`.`uuid` = ?",[uid], function (err, rows, fields) {
-            if (err) {
-                console.log('MySQL ERROR', err);
-            }
-            
-            if (rows.affectedRows) {
-                res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
-            } else {
-                res.send({ msg: "Could not delete user", status: 1, });
-            }
+    db.query("DELETE FROM `user` WHERE `user`.`uuid` = ?", [uid], function (err, rows, fields) {
+        if (err) {
+            console.log('MySQL ERROR', err);
         }
+
+        if (rows.affectedRows) {
+            res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+        } else {
+            res.send({ msg: "Could not delete user", status: 1, });
+        }
+    }
     );
 })
+
+//update user
+app.post('/update_user', (req, res, next) => {
+    var fname = req.body.fname;
+    var lname = req.body.lname;
+    var email = req.body.email;
+    var cell    = req.body.cell;
+    var gender = req.body.gender;
+    var province = req.body.province;
+    var dob = req.dob;
+    var uid = req.body.uuid;
+    db.query("UPDATE `user` SET `updated_at`=NOW(),`names`=?,`surname`=?,`email`=?,`cell`=?,`gender`=?,`province`=?,`date_of_birth`=? WHERE uuid = ?", 
+    [fname, lname, email, cell, gender, province, dob, uid], function (err, rows, fields) {
+        if (err) {
+            console.log('MySQL ERROR', err);
+        }
+
+        if (rows && rows.affectedRows) {
+            res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+        } else {
+            res.send({ msg: "Could not update user", status: 1, });
+        }
+    });
+})
+
+
 
 
 //start server
