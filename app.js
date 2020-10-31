@@ -66,9 +66,9 @@ async function resetPass(email, password) {
         subject: "Forgot Password ✔", // Subject line
         text: "", // plain text body
         html: "<b>Your password has been reseted here is your new password:</b>"
-        +"<br><h1>"+password+"</h1>"
-        +"<br><br> <p>login to the application using the new passsword and head to profile to add your own unique password!</p>"
-        +"<br><p>kind Regards</><br><p>Air Food ✈️", // html body
+            + "<br><h1>" + password + "</h1>"
+            + "<br><br> <p>login to the application using the new passsword and head to profile to add your own unique password!</p>"
+            + "<br><p>kind Regards</><br><p>Air Food ✈️", // html body
     });
 
     console.log("Message sent: %s", info.messageId);
@@ -77,14 +77,14 @@ async function resetPass(email, password) {
 async function verifyEmail(uid) {
     // send mail with defined transport object
     let info = await transporter.sendMail({
-        
+
         from: '"Air Food ✈️" <air.food@outlook.com>', // sender address
         to: "paulphoku@gmail.com", // list of receivers
         subject: "Verify email ✔", // Subject line
         text: "",                   // plain text body
         html: "<b>Hey there , please varify your email in order to login to our platform.<b>"
-        +"<br><br>fb.com/verifyEmail/"+uid+""
-        +"<p>kind Regards</><br><p>Air Food ✈️", // html body
+            + "<br><br>https://kohaku-b.herokuapp.com//verifyEmail/" + uid + ""
+            + "<p>kind Regards</><br><p>Air Food ✈️", // html body
     });
     console.log(uid);
     console.log("Message sent: %s", info.messageId);
@@ -217,6 +217,40 @@ app.get('/resetPassword/:email', (req, res, next) => {
     );
 })
 
+//verify email
+app.get('/verifyemail/:uuid', (req, res, next) => {
+    var uid = req.params.uuid;
+    db.query("SELECT * FROM user WHERE uuid = ?", [uid], function (err, rows1, fields) {
+        if (err) {
+            console.log('MySQL ERROR', err);
+            res.send({ msg: "Could not change password", status: 1 });
+        }
+        if (rows1.length > 0 && rows1[0].isVerified == 0) {
+            db.query("UPDATE `user` SET`isVerified` =? WHERE uuid = ?", [1,uid], function (err, rows, fields) {
+                res.send({ msg: "Done", status: 0 , data: rows});
+            });
+        } else {
+            res.send({ msg: "Email: " + rows1[0].email + " alredy verified", status: 1 });
+        }
+    });
+})
+
+//update password
+app.post('/delete_user/:uuid', (req, res, next) => {
+    var uid = req.params.uuid;
+    db.query("DELETE FROM `user` WHERE `user`.`uuid` = ?",[uid], function (err, rows, fields) {
+            if (err) {
+                console.log('MySQL ERROR', err);
+            }
+            
+            if (rows.affectedRows) {
+                res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+            } else {
+                res.send({ msg: "Could not delete user", status: 1, });
+            }
+        }
+    );
+})
 
 
 //start server
