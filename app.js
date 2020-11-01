@@ -1,4 +1,4 @@
-//Author paulphoku
+//Author paulphoku@gmail.com
 //Restful apis by NodeJs
 //created on 31-10-2020
 
@@ -10,7 +10,6 @@ var bodyParser = require('body-parser');
 const cors = require('cors');
 "use strict";
 const nodemailer = require("nodemailer");
-
 
 //Defining the PORT
 const port = process.env.PORT || 8080;
@@ -57,12 +56,12 @@ function checkHashPassword(userPassword, salt) {
 //END PASSWORD UTIL
 
 
-async function resetPass(email, password) {
+async function resetPass(email, password, res) {
 
     // send mail with defined transport object
     let info = await transporter.sendMail({
         from: '"Air Food ✈️" <air.food@outlook.com>', // sender address
-        to: "paulphoku@gmail.com", // list of receivers
+        to: email, // list of receivers
         subject: "Forgot Password ✔", // Subject line
         text: "", // plain text body
         html: "<b>Your password has been reseted here is your new password:</b>"
@@ -72,18 +71,24 @@ async function resetPass(email, password) {
     });
 
     console.log("Message sent: %s", info.messageId);
+    if(info.messageId){
+        res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+    }else{
+        
+    }
+
 }
 
-async function verifyEmail(uid) {
+async function verifyEmail(uid, email) {
     // send mail with defined transport object
     let info = await transporter.sendMail({
 
         from: '"Air Food ✈️" <air.food@outlook.com>', // sender address
-        to: "paulphoku@gmail.com", // list of receivers
+        to: email, // list of receivers
         subject: "Verify email ✔", // Subject line
         text: "",                   // plain text body
         html: "<b>Hey there , please varify your email in order to login to our platform.<b>"
-            + "<br><br>https://kohaku-b.herokuapp.com//verifyEmail/" + uid + ""
+            + "<br><br>https://kohaku-b.herokuapp.com/verifyemail/" + uid + ""
             + "<p>kind Regards</><br><p>Air Food ✈️", // html body
     });
     console.log(uid);
@@ -125,8 +130,8 @@ app.post('/register', (req, res, next) => {
                         console.log('MySQL ERROR', err);
                         res.send({ msg: "Could not register user", status: 1 });
                     } else {
-                        verifyEmail(uid);
-                        res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+                        verifyEmail(uid, email);
+                        res.send({ msg: "Succesfully Registered, Check your email to verify account in order to login", status: 0, rows: rows.length, data: rows });
                     }
                 });
         }
@@ -142,18 +147,22 @@ app.post('/login', (req, res, next) => {
 
     db.query('Select * From user Where email=?', [email], function (error, rows, fields) {
 
-        if (rows[0] && rows[0].salt) {
+        if (rows.length > 0 && rows[0].salt) {
             var salt = rows[0].salt;//Getsalt from database
             var encrypted_password = rows[0].encrypted_password;
             //hash password from login
             var hashed_password = checkHashPassword(user_password, salt).passwordHash;
-            if (encrypted_password == hashed_password) {
-                res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+            if (encrypted_password == hashed_password ) {
+                if(rows[0].isVerified == 1){
+                    res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+                }else{
+                    res.send({ msg: "Email not is verified, check your emails and verify", status: 1 });
+                }
             } else {
                 res.send({ msg: "Wrong password", status: 1 });
             }
         } else {
-            res.send({ msg: "user not exist!!!", status: 2 });
+            res.send({ msg: "user does not exist or invalid email recieved", status: 2 });
         }
     });
 });
@@ -171,8 +180,7 @@ app.get('/getUser/:user_id', (req, res, next) => {
 });
 
 //update password
-app.post('/updatePassword', (req, res, next) => {
-    var post_data = req.body; //get post params
+app.post('/update_password', (req, res, next) => {
     var uuid = req.body.uuid;
     var plaint_password = post_data.password;
     var hash_data = saltHashPassword(plaint_password);
@@ -208,10 +216,9 @@ app.get('/resetPassword/:email', (req, res, next) => {
                 console.log('MySQL ERROR', err);
                 res.send({ msg: "Could not change password", status: 1 });
             } else if (rows.changedRows > 0) {
-                resetPass(email, plaint_password);
-                res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+                resetPass(email, plaint_password, res);
             } else {
-                res.send({ msg: "Could not reset password", status: 1, data: rows });
+                res.send({ msg: "Invalid email recieved or email not registered", status: 1, data: rows });
             }
         }
     );
@@ -223,14 +230,14 @@ app.get('/verifyemail/:uuid', (req, res, next) => {
     db.query("SELECT * FROM user WHERE uuid = ?", [uid], function (err, rows1, fields) {
         if (err) {
             console.log('MySQL ERROR', err);
-            res.send({ msg: "Could not change password", status: 1 });
+            res.send({ msg: "Could not verify password", status: 1 });
         }
         if (rows1.length > 0 && rows1[0].isVerified == 0) {
             db.query("UPDATE `user` SET`isVerified` =? WHERE uuid = ?", [1, uid], function (err, rows, fields) {
-                res.send({ msg: "Done", status: 0, data: rows });
+                res.send({ msg: "<h1>Succesfully verified password</h1>" });
             });
         } else {
-            res.send({ msg: "Email: " + rows1[0].email + " alredy verified", status: 1 });
+            res.send({ msg: "<h1>Email: " + rows1[0].email + " alredy verified</h1>", status: 1 });
         }
     });
 })
@@ -276,7 +283,29 @@ app.post('/update_user', (req, res, next) => {
     });
 })
 
+//ADD user flight
+app.post('/add_user_flight', (req, res, next) => {
+    var fname = req.body.fname;
+    var lname = req.body.lname;
+    var email = req.body.email;
+    var cell    = req.body.cell;
+    var gender = req.body.gender;
+    var province = req.body.province;
+    var dob = req.dob;
+    var uid = req.body.uuid;
+    db.query("UPDATE `user` SET `updated_at`=NOW(),`names`=?,`surname`=?,`email`=?,`cell`=?,`gender`=?,`province`=?,`date_of_birth`=? WHERE uuid = ?", 
+    [fname, lname, email, cell, gender, province, dob, uid], function (err, rows, fields) {
+        if (err) {
+            console.log('MySQL ERROR', err);
+        }
 
+        if (rows && rows.affectedRows) {
+            res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+        } else {
+            res.send({ msg: "Could not update user", status: 1, });
+        }
+    });
+})
 
 
 //start server
