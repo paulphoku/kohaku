@@ -168,8 +168,8 @@ app.post('/login', (req, res, next) => {
 });
 
 //get user
-app.get('/getUser/:user_id', (req, res, next) => {
-    let user_id = req.params.user_id;
+app.post('/getUser', (req, res, next) => {
+    let user_id = req.body.uuid;
     db.query('SELECT * FROM user WHERE uuid=?', [user_id], function (error, result, fields) {
         if (result) {
             res.send({ status: 0, msg: 'done', data: result });
@@ -182,7 +182,7 @@ app.get('/getUser/:user_id', (req, res, next) => {
 //update password
 app.post('/update_password', (req, res, next) => {
     var uuid = req.body.uuid;
-    var plaint_password = post_data.password;
+    var plaint_password = req.body.password;
     var hash_data = saltHashPassword(plaint_password);
     var password = hash_data.passwordHash;
     var salt = hash_data.salt; //get salt
@@ -243,8 +243,8 @@ app.get('/verifyemail/:uuid', (req, res, next) => {
 })
 
 //delete user
-app.post('/delete_user/:uuid', (req, res, next) => {
-    var uid = req.params.uuid;
+app.post('/delete_user', (req, res, next) => {
+    var uid = req.body.uuid;
     db.query("DELETE FROM `user` WHERE `user`.`uuid` = ?", [uid], function (err, rows, fields) {
         if (err) {
             console.log('MySQL ERROR', err);
@@ -269,8 +269,8 @@ app.post('/update_user', (req, res, next) => {
     var province = req.body.province;
     var dob = req.dob;
     var uid = req.body.uuid;
-    db.query("UPDATE `user` SET `updated_at`=NOW(),`names`=?,`surname`=?,`email`=?,`cell`=?,`gender`=?,`province`=?,`date_of_birth`=? WHERE uuid = ?", 
-    [fname, lname, email, cell, gender, province, dob, uid], function (err, rows, fields) {
+    db.query("UPDATE `user` SET `updated_at`=NOW(),`names`=?,`surname`=?,`email`=?,`cell`=?,`gender`=?,`province`=? WHERE uuid = ?", 
+    [fname, lname, email, cell, gender, province, uid], function (err, rows, fields) {
         if (err) {
             console.log('MySQL ERROR', err);
         }
