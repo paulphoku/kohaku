@@ -369,7 +369,7 @@ app.post('/add_ticket', (req, res, next) => {
 //get all users
 app.post('/get_all_users', (req, res, next) => {
     try {
-        db.query("select * from user where isVerified=1",
+        db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user` WHERE isVerified=0",
             [], function (err, rows, fields) {
             
                 if (rows) {
