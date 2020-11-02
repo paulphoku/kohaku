@@ -44,6 +44,7 @@ var sha512 = function (password, salt) {
         passwordHash: value
     };
 };
+
 function saltHashPassword(userPassword) {
     var salt = getRandomString(16); //Generate Randon String
     var passwordData = sha512(userPassword, salt);
@@ -71,10 +72,10 @@ async function resetPass(email, password, res) {
     });
 
     console.log("Message sent: %s", info.messageId);
-    if(info.messageId){
+    if (info.messageId) {
         res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
-    }else{
-        
+    } else {
+
     }
 
 }
@@ -152,10 +153,10 @@ app.post('/login', (req, res, next) => {
             var encrypted_password = rows[0].encrypted_password;
             //hash password from login
             var hashed_password = checkHashPassword(user_password, salt).passwordHash;
-            if (encrypted_password == hashed_password ) {
-                if(rows[0].isVerified == 1){
+            if (encrypted_password == hashed_password) {
+                if (rows[0].isVerified == 1) {
                     res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
-                }else{
+                } else {
                     res.send({ msg: "Email not is verified, check your emails and verify", status: 1 });
                 }
             } else {
@@ -264,23 +265,23 @@ app.post('/update_user', (req, res, next) => {
     var fname = req.body.fname;
     var lname = req.body.lname;
     var email = req.body.email;
-    var cell    = req.body.cell;
+    var cell = req.body.cell;
     var gender = req.body.gender;
     var province = req.body.province;
     var dob = req.dob;
     var uid = req.body.uuid;
-    db.query("UPDATE `user` SET `updated_at`=NOW(),`names`=?,`surname`=?,`email`=?,`cell`=?,`gender`=?,`province`=? WHERE uuid = ?", 
-    [fname, lname, email, cell, gender, province, uid], function (err, rows, fields) {
-        if (err) {
-            console.log('MySQL ERROR', err);
-        }
+    db.query("UPDATE `user` SET `updated_at`=NOW(),`names`=?,`surname`=?,`email`=?,`cell`=?,`gender`=?,`province`=? WHERE uuid = ?",
+        [fname, lname, email, cell, gender, province, uid], function (err, rows, fields) {
+            if (err) {
+                console.log('MySQL ERROR', err);
+            }
 
-        if (rows && rows.affectedRows) {
-            res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
-        } else {
-            res.send({ msg: "Could not update user", status: 1, });
-        }
-    });
+            if (rows && rows.affectedRows) {
+                res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+            } else {
+                res.send({ msg: "Could not update user", status: 1, });
+            }
+        });
 })
 
 //ADD user flight
@@ -288,48 +289,54 @@ app.post('/add_ticket', (req, res, next) => {
     var uuid = req.body.uuid;
     var from = req.body.from;
     var to = req.body.to;
-    var to    = req.body.to;
     var Return = req.body.Return;
+    var depart = req.body.depart;
     var adults = req.body.adults;
-    var children = req.children;
+    var children = req.body.children;
     var adult_price = req.body.adult_price;
     var child_price = req.body.child_price;
 
-    db.query("INSERT INTO `ticket` (`id`, `uuid`, `destination_from`, `destination_to`, `depart`, `return`, `adults`, `children`, `adult_price`, `child_price`) VALUES (NULL, '', '', NULL, '', '', '', '', '', '')", 
-    [uuid, from, to, depart, Return, adults, children, adult_price, child_price], function (err, rows, fields) {
-        if (err) {
-            console.log('MySQL ERROR', err);
-        }
-        if (rows && rows.insertId) {
-            let t_id = rows.insertId;
-            res.send({ status: 0, msg: 'done', data: result });
-            // db.query('SELECT * FROM user WHERE uuid=?', [user_id], function (error, result, fields) {
-            //     if (result) {
-            //         res.send({ status: 0, msg: 'done', data: result });
-            //     } else {
-            //         res.send({ msg: 'Something went wrong', status: 1 });
-            //     }
-            // });
-        } else {
-            res.send({ msg: "Could not add ticket", status: 1, });
-        }
-    });
+    db.query("INSERT INTO `ticket` (uuid`, `destination_from`, `destination_to`, `depart`, `return`, `adults`, `children`, `adult_price`, `child_price`) VALUES (?, ?, ?, NOW(), NOW(), ?, ?, ?, ?)",
+        [uuid, from, to, depart, Return, adults, children, adult_price, child_price], function (err, rows, fields) {
+            if (err) {
+                console.log('MySQL ERROR', err);
+            }
+            if (rows) {
+                let t_id = rows.insertId;
+                res.send({ status: 0, msg: 'done', data: result });
+                // db.query('SELECT * FROM user WHERE uuid=?', [user_id], function (error, result, fields) {
+                //     if (result) {
+                //         res.send({ status: 0, msg: 'done', data: result });
+                //     } else {
+                //         res.send({ msg: 'Something went wrong', status: 1 });
+                //     }
+                // });
+            } else {
+                res.send({ msg: "Could not add ticket", status: 1, });
+            }
+        });
 })
 
 //get all users
 app.post('/get_all_users', (req, res, next) => {
-    db.query("select * from user where isVerified=1", 
-    [], function (err, rows, fields) {
-        if (err) {
-            console.log('MySQL ERROR', err);
-        }
-        if (rows) {
-            res.send({ status: 0, msg: 'done', data: rows });
-        } else {
-            res.send({ msg: "Could not add ticket", status: 1, });
-        }
-    });
+    db.query("select * from user where isVerified=1",
+        [], function (err, rows, fields) {
+            if (err) {
+                console.log('MySQL ERROR', err);
+            }
+            if (rows) {
+                res.send({ status: 0, msg: 'done', data: rows });
+            } else {
+                res.send({ msg: "Could not add ticket", status: 1, });
+            }
+        });
 })
+
+//index
+app.get('/', (req, res, next) => {
+    res.send({ msg: "Welcome to Kohaku!" });
+})
+
 
 //start server
 app.listen(port, () => {
