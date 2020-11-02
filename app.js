@@ -296,7 +296,7 @@ app.post('/add_ticket', (req, res, next) => {
     var child_price = req.body.child_price;
 
     db.query("INSERT INTO `ticket` (`id`, `uuid`, `destination_from`, `destination_to`, `depart`, `return`, `adults`, `children`, `adult_price`, `child_price`) VALUES (NULL, '', '', NULL, '', '', '', '', '', '')", 
-    [uuid, lname, from, to, depart, Return, adults, children, adult_price, child_price], function (err, rows, fields) {
+    [uuid, from, to, depart, Return, adults, children, adult_price, child_price], function (err, rows, fields) {
         if (err) {
             console.log('MySQL ERROR', err);
         }
@@ -316,8 +316,20 @@ app.post('/add_ticket', (req, res, next) => {
     });
 })
 
-
-
+//get all users
+app.post('/get_all_users', (req, res, next) => {
+    db.query("select * from user", 
+    [], function (err, rows, fields) {
+        if (err) {
+            console.log('MySQL ERROR', err);
+        }
+        if (rows) {
+            res.send({ status: 0, msg: 'done', data: rows });
+        } else {
+            res.send({ msg: "Could not add ticket", status: 1, });
+        }
+    });
+})
 
 //start server
 app.listen(port, () => {
