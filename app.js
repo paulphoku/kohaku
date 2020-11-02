@@ -318,7 +318,7 @@ app.post('/add_ticket', (req, res, next) => {
 
 //get all users
 app.post('/get_all_users', (req, res, next) => {
-    db.query("select * from user", 
+    db.query("select * from user where isVerified=1", 
     [], function (err, rows, fields) {
         if (err) {
             console.log('MySQL ERROR', err);
