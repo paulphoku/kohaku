@@ -386,6 +386,7 @@ app.post('/get_all_verrified_users', (req, res, next) => {
         );
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
+        console.log(err);
     }
 })
 
@@ -397,7 +398,8 @@ app.post('/get_all_nonverrified_users', (req, res, next) => {
                 if (rows) {
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
-                    res.send({ msg: "Could not add ticket", status: 1});
+                    res.send({ msg: "Couldn't get all verified users", status: 1});
+                    console.log(err);
                 }
             }
         );
@@ -411,12 +413,11 @@ app.post('/get_all_users_by_search', (req, res, next) => {
     try {
         db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user` WHERE `created_at` LIKE '%"+searchText+"%' OR `email` LIKE '%"+searchText+"%' OR role LIKE '%"+searchText+"%' ",
             [], function (err, rows, fields) {
-            
                 if (rows) {
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
-                    res.send({ msg: "Could not add ticket", status: 1});
-                    console.log(err)
+                    res.send({ msg: "Couldn't get all users by search", status: 1});
+                    console.log(err);
                 }
             }
         );
@@ -433,7 +434,27 @@ app.post('/get_all_users', (req, res, next) => {
                 if (rows) {
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
-                    res.send({ msg: "Could not add ticket", status: 1});
+                    res.send({ msg: "Couldn't get all users", status: 1});
+                    console.log(err);
+                }
+            }
+        );
+    } catch (err) {
+        res.send({ msg: 'Something went wrong', status: 2 });
+    }
+})
+
+app.post('/register_admin', (req, res, next) => {
+    var uuid = req.body.uuid;
+    var ur = req.body.ur;
+    try {
+        db.query("UPDATE `user` SET `role`='"+ur+"' WHERE uuid = ?",
+            [uuid], function (err, rows, fields) {
+                if (rows) {
+                    res.send({ status: 0, msg: 'done', data: rows });
+                } else {
+                    console.log(err);
+                    res.send({ msg: "Something went wrong", status: 1});
                 }
             }
         );
