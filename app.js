@@ -180,7 +180,7 @@ app.post('/login', (req, res, next) => {
             }
         });
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 });
+        res.send({ msg: 'Something went wrong'+err, status: 2 });
     }
 
 });
@@ -338,17 +338,23 @@ app.post('/add_ticket', (req, res, next) => {
     var adult_price = req.body.adult_price;
     var child_price = req.body.child_price;
     var meals = req.body.meals;
+    var Class = req.body.Class;
+    var totalAmt = 0;
+
+    depart = depart.substr(0, 10);
+    Return = Return.substr(0,10);
 
     try {
-        db.query("INSERT INTO `ticket` (uuid`, `destination_from`, `destination_to`, `depart`, `return`, `adults`, `children`, `adult_price`, `child_price`) VALUES (?, ?, ?, NOW(), NOW(), ?, ?, ?, ?)",
-            [uuid, from, to, depart, Return, adults, children, adult_price, child_price], function (err, rows, fields) {
+        db.query("INSERT INTO `booking` ( `class`, `departure`, `destination`, `depart_date`, `return_date`, `total_amount`) VALUES ( ?, ?, ?, ?, ?, ?)",
+            [Class, from, to, depart, Return, totalAmt], function (err, rows, fields) {
                 if (err) {
                     console.log('MySQL ERROR', err);
                 }
                 if (rows) {
-                    let t_id = rows.insertId;
-                    res.send({ status: 0, msg: 'done', data: result });
-                    // db.query('SELECT * FROM user WHERE uuid=?', [user_id], function (error, result, fields) {
+                    res.send({ status: 0, msg: 'Booked ticket', data: rows });
+                    // db.query("INSERT INTO `ticket` (`ticket_id`, `uuid`, `airport_name`, `flight_no`, `boarding_time`, `departure_time`, `seat`) VALUES (NULL, ?, ?, ?, ?, ?, ?)",
+                    //  [user_id], function (error, result, fields) {
+                    //     let t_id = rows.insertId;
                     //     if (result) {
                     //         res.send({ status: 0, msg: 'done', data: result });
                     //     } else {
@@ -363,11 +369,27 @@ app.post('/add_ticket', (req, res, next) => {
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
-
 })
 
 //get all users
-app.post('/get_all_users', (req, res, next) => {
+app.post('/get_all_verrified_users', (req, res, next) => {
+    try {
+        db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user` WHERE isVerified=1",
+            [], function (err, rows, fields) {
+            
+                if (rows) {
+                    res.send({ status: 0, msg: 'done', data: rows });
+                } else {
+                    res.send({ msg: "Could not add ticket", status: 1});
+                }
+            }
+        );
+    } catch (err) {
+        res.send({ msg: 'Something went wrong', status: 2 });
+    }
+})
+
+app.post('/get_all_nonverrified_users', (req, res, next) => {
     try {
         db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user` WHERE isVerified=0",
             [], function (err, rows, fields) {
@@ -382,7 +404,42 @@ app.post('/get_all_users', (req, res, next) => {
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
+})
 
+app.post('/get_all_users_by_search', (req, res, next) => {
+    var searchText = req.body.searchText;
+    try {
+        db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user` WHERE `created_at` LIKE '%"+searchText+"%' OR `email` LIKE '%"+searchText+"%' OR role LIKE '%"+searchText+"%' ",
+            [], function (err, rows, fields) {
+            
+                if (rows) {
+                    res.send({ status: 0, msg: 'done', data: rows });
+                } else {
+                    res.send({ msg: "Could not add ticket", status: 1});
+                    console.log(err)
+                }
+            }
+        );
+    } catch (err) {
+        res.send({ msg: 'Something went wrong', status: 2 });
+    }
+})
+
+app.post('/get_all_users', (req, res, next) => {
+    try {
+        db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user`",
+            [], function (err, rows, fields) {
+            
+                if (rows) {
+                    res.send({ status: 0, msg: 'done', data: rows });
+                } else {
+                    res.send({ msg: "Could not add ticket", status: 1});
+                }
+            }
+        );
+    } catch (err) {
+        res.send({ msg: 'Something went wrong', status: 2 });
+    }
 })
 
 //index

@@ -17,7 +17,7 @@ var smtp = {
 }
 
 //- Create the connection variable
-var db = mysql.createConnection(db_config);
+var db = mysql.createPool(db_config);
 
 // //- Establish a new connection
 // db.connect(function(err){
