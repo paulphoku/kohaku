@@ -29,6 +29,10 @@ const transporter = nodemailer.createTransport({
     tls: true,
 });
 
+function getRandomArbitrary(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
 //PASSWORD UTIL
 var getRandomString = function (length) {
     return crypto.randomBytes(Math.ceil(length / 2))
@@ -70,14 +74,17 @@ async function resetPass(email, password, res) {
                 + "<br><br> <p>login to the application using the new passsword and head to profile to add your own unique password!</p>"
                 + "<br><p>kind Regards</><br><p>Air Food ✈️", // html body
         });
+        
+        console.log(password);
 
         console.log("Message sent: %s", info.messageId);
         if (info.messageId) {
-            res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+            res.send({ msg: "Done", status: 0 });
         } else {
 
         }
     } catch (err) {
+        console.log(err);
         res.send({ msg: 'Something went wrong', status: 2 });
     }
 
@@ -180,7 +187,7 @@ app.post('/login', (req, res, next) => {
             }
         });
     } catch (err) {
-        res.send({ msg: 'Something went wrong'+err, status: 2 });
+        res.send({ msg: 'Something went wrong' + err, status: 2 });
     }
 
 });
@@ -238,22 +245,20 @@ app.get('/resetPassword/:email', (req, res, next) => {
     var password = hash_data.passwordHash;
     var salt = hash_data.salt; //get salt
 
-    try {
-        db.query("UPDATE `user` SET `salt`=?,`encrypted_password`=? WHERE email = ?",
-            [salt, password, email], function (err, rows, fields) {
-                if (err) {
-                    //console.log('MySQL ERROR', err);
-                    res.send({ msg: "Could not change password", status: 1 });
-                } else if (rows.changedRows > 0) {
-                    resetPass(email, plaint_password, res);
-                } else {
-                    res.send({ msg: "Invalid email recieved or email not registered", status: 1, data: rows });
-                }
+
+    db.query("UPDATE `user` SET `salt`=?,`encrypted_password`=? WHERE email = ?",
+        [salt, password, email], function (err, rows, fields) {
+            if (err) {
+                //console.log('MySQL ERROR', err);
+                res.send({ msg: "Could not change password", status: 1 });
+            } else if (rows.changedRows > 0) {
+                resetPass(email, plaint_password, res);
+            } else {
+                res.send({ msg: "Invalid email recieved or email not registered", status: 1, data: rows });
             }
-        );
-    } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 });
-    }
+        }
+    );
+
 })
 
 //verify email
@@ -340,27 +345,28 @@ app.post('/add_ticket', (req, res, next) => {
     var meals = req.body.meals;
     var Class = req.body.Class;
     var totalAmt = 0;
+    var seat = Class.substr(0.1) + '' + getRandomArbitrary(1, 90);
 
     depart = depart.substr(0, 10);
-    Return = Return.substr(0,10);
+    Return = Return.substr(0, 10);
 
     try {
         db.query("INSERT INTO `booking` ( `class`, `departure`, `destination`, `depart_date`, `return_date`, `total_amount`) VALUES ( ?, ?, ?, ?, ?, ?)",
-            [Class, from, to, depart, Return, totalAmt], function (err, rows, fields) {
+            [Class, from, to, depart, Return, totalAmt], function (err, rows0, fields) {
                 if (err) {
                     console.log('MySQL ERROR', err);
                 }
                 if (rows) {
-                    res.send({ status: 0, msg: 'Booked ticket', data: rows });
-                    // db.query("INSERT INTO `ticket` (`ticket_id`, `uuid`, `airport_name`, `flight_no`, `boarding_time`, `departure_time`, `seat`) VALUES (NULL, ?, ?, ?, ?, ?, ?)",
-                    //  [user_id], function (error, result, fields) {
-                    //     let t_id = rows.insertId;
-                    //     if (result) {
-                    //         res.send({ status: 0, msg: 'done', data: result });
-                    //     } else {
-                    //         res.send({ msg: 'Something went wrong', status: 1 });
-                    //     }
-                    // });
+                    //res.send({ status: 0, msg: 'Booked ticket', data: rows });
+                    db.query("INSERT INTO `ticket` (uuid`, `airport_name`, `flight_no`, `boarding_time`, `departure_time`, `seat`) VALUES ( ?, ?, ?, ?, ?, ?)",
+                        [user_id, from, 'A909', '09:00', depart, seat], function (error, result, fields) {
+                            let t_id = rows.insertId;
+                            if (result) {
+                                res.send({ status: 0, msg: 'done', data: result });
+                            } else {
+                                res.send({ msg: 'Something went wrong', status: 1 });
+                            }
+                        });
                 } else {
                     res.send({ msg: "Could not add ticket", status: 1, });
                 }
@@ -376,11 +382,11 @@ app.post('/get_all_verrified_users', (req, res, next) => {
     try {
         db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user` WHERE isVerified=1",
             [], function (err, rows, fields) {
-            
+
                 if (rows) {
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
-                    res.send({ msg: "Could not add ticket", status: 1});
+                    res.send({ msg: "Could not add ticket", status: 1 });
                 }
             }
         );
@@ -394,11 +400,11 @@ app.post('/get_all_nonverrified_users', (req, res, next) => {
     try {
         db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user` WHERE isVerified=0",
             [], function (err, rows, fields) {
-            
+
                 if (rows) {
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
-                    res.send({ msg: "Couldn't get all verified users", status: 1});
+                    res.send({ msg: "Couldn't get all verified users", status: 1 });
                     console.log(err);
                 }
             }
@@ -411,12 +417,12 @@ app.post('/get_all_nonverrified_users', (req, res, next) => {
 app.post('/get_all_users_by_search', (req, res, next) => {
     var searchText = req.body.searchText;
     try {
-        db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user` WHERE `created_at` LIKE '%"+searchText+"%' OR `email` LIKE '%"+searchText+"%' OR role LIKE '%"+searchText+"%' ",
+        db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user` WHERE `created_at` LIKE '%" + searchText + "%' OR `email` LIKE '%" + searchText + "%' OR role LIKE '%" + searchText + "%' ",
             [], function (err, rows, fields) {
                 if (rows) {
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
-                    res.send({ msg: "Couldn't get all users by search", status: 1});
+                    res.send({ msg: "Couldn't get all users by search", status: 1 });
                     console.log(err);
                 }
             }
@@ -430,11 +436,11 @@ app.post('/get_all_users', (req, res, next) => {
     try {
         db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user`",
             [], function (err, rows, fields) {
-            
+
                 if (rows) {
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
-                    res.send({ msg: "Couldn't get all users", status: 1});
+                    res.send({ msg: "Couldn't get all users", status: 1 });
                     console.log(err);
                 }
             }
@@ -448,13 +454,13 @@ app.post('/register_admin', (req, res, next) => {
     var uuid = req.body.uuid;
     var ur = req.body.ur;
     try {
-        db.query("UPDATE `user` SET `role`='"+ur+"' WHERE uuid = ?",
+        db.query("UPDATE `user` SET `role`='" + ur + "' WHERE uuid = ?",
             [uuid], function (err, rows, fields) {
                 if (rows) {
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
                     console.log(err);
-                    res.send({ msg: "Something went wrong", status: 1});
+                    res.send({ msg: "Something went wrong", status: 1 });
                 }
             }
         );
