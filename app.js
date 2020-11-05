@@ -469,6 +469,52 @@ app.post('/register_admin', (req, res, next) => {
     }
 })
 
+app.post('/get_user_tickets', (req, res, next) => {
+    var uuid = req.body.uuid;
+    var ur = req.body.ur;
+    try {
+        db.query("SELECT * FROM `ticket`",
+            [uuid], function (err, rows, fields) {
+                if (rows) {
+                    res.send({ status: 0, msg: 'done', data: rows });
+                } else {
+                    console.log(err);
+                    res.send({ msg: "Something went wrong", status: 1 });
+                }
+            }
+        );
+    } catch (err) {
+        res.send({ msg: 'Something went wrong', status: 2 });
+    }
+})
+
+
+app.post('/add_user_payment', (req, res, next) => {
+    var uuid = req.body.uuid;
+    var payment_type = req.body.payment_type;
+    var amount =req.body.amount;
+    var card_number = req.body.card_number;
+    var cvv = req.body.cvv;
+    var expire_date = req.body.expire_date;
+    var status = req.body.status;
+    status = '0';
+
+    try {
+        db.query("INSERT INTO `payment` ( `ticket_id`,uuid,  `payment_type`, `amount`, `card_number`, `cvv`, `expire_date`, `status`) VALUES ('', '', '', '', '', '', '')",
+            [uuid], function (err, rows, fields) {
+                if (rows) {
+                    res.send({ status: 0, msg: 'done', data: rows });
+                } else {
+                    console.log(err);
+                    res.send({ msg: "Something went wrong", status: 1 });
+                }
+            }
+        );
+    } catch (err) {
+        res.send({ msg: 'Something went wrong', status: 2 });
+    }
+})
+
 //index
 app.get('/', (req, res, next) => {
     res.send({ msg: "Welcome to Kohaku!" });
