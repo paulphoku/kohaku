@@ -368,7 +368,7 @@ app.post('/add_ticket', (req, res, next) => {
                                         }
                                     );
                                 }
-                                res.send({ status: 0, msg: 'done', data: result });
+                                res.send({ status: 0, msg: 'done', data: result , t_id: t_id});
                             } else {
                                 res.send({ msg: 'Something went wrong', status: 1 });
                                 console.log(error);
@@ -477,13 +477,12 @@ app.post('/register_admin', (req, res, next) => {
     }
 })
 
-app.post('/get_user_tickets', (req, res, next) => {
-    var uuid = req.body.uuid;
-    var ur = req.body.ur;
+app.post('/get_user_tickets', (req, res, next) => {    
     try {
-        db.query("SELECT * FROM `ticket`",
+        db.query("SELECT * FROM `ticket` WHERE `airport_name` LIKE '%"+searchText+"%' OR `seat` LIKE '%"+searchText+"%' OR `boarding_time` LIKE '%"+searchText+"%'",
             [uuid], function (err, rows, fields) {
                 if (rows) {
+                    console.log(searchText);
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
                     console.log(err);
@@ -509,7 +508,7 @@ app.post('/add_user_payment', (req, res, next) => {
 
     try {
         db.query("INSERT INTO `payment` ( `ticket_id`,  `payment_type`, `amount`, `card_number`, `cvv`, `expire_date`, `status`) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            [ticket_id, payment_type, amount, card_number, cvv, expire_date, status], function (err, rows, fields) {
+            [ticket_id, payment_type, amount, card_number, cvv, expire_date.substr(0, 10), status], function (err, rows, fields) {
                 if (rows) {
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
