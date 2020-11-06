@@ -74,7 +74,7 @@ async function resetPass(email, password, res) {
                 + "<br><br> <p>login to the application using the new passsword and head to profile to add your own unique password!</p>"
                 + "<br><p>kind Regards</><br><p>Air Food ✈️", // html body
         });
-        
+
         console.log(password);
 
         console.log("Message sent: %s", info.messageId);
@@ -342,31 +342,39 @@ app.post('/add_ticket', (req, res, next) => {
     var children = req.body.children;
     var adult_price = req.body.adult_price;
     var child_price = req.body.child_price;
-    var meals = req.body.meals;
+    var meals = JSON.parse(req.body.meals);
     var Class = req.body.Class;
-    var totalAmt = 0;
-    var seat = Class.substr(0.1) + '' + getRandomArbitrary(1, 90);
-
-    depart = depart.substr(0, 10);
-    Return = Return.substr(0, 10);
+    var totalAmt = req.body.totalAmt;
+    var seat = Class.substr(0, 1) + '' + getRandomArbitrary(1, 90);
 
     try {
-        db.query("INSERT INTO `booking` ( `class`, `departure`, `destination`, `depart_date`, `return_date`, `total_amount`) VALUES ( ?, ?, ?, ?, ?, ?)",
-            [Class, from, to, depart, Return, totalAmt], function (err, rows0, fields) {
+        db.query("INSERT INTO `booking` (uuid,  `class`, `departure`, `destination`, `depart_date`, `return_date`, `total_amount`) VALUES (?,  ?, ?, ?, ?, ?, ?)",
+            [uuid, Class, from, to, depart.substr(0, 10), Return.substr(0, 10), totalAmt], function (err, rows0, fields) {
                 if (err) {
                     console.log('MySQL ERROR', err);
                 }
-                if (rows) {
+                if (rows0) {
+                    let t_id = rows0.insertId;
+                    depart = depart.substr(11, 5);
+                    Return = Return.substr(11, 5);
                     //res.send({ status: 0, msg: 'Booked ticket', data: rows });
-                    db.query("INSERT INTO `ticket` (uuid`, `airport_name`, `flight_no`, `boarding_time`, `departure_time`, `seat`) VALUES ( ?, ?, ?, ?, ?, ?)",
-                        [user_id, from, 'A909', '09:00', depart, seat], function (error, result, fields) {
-                            let t_id = rows.insertId;
+                    db.query("INSERT INTO `ticket` (ticket_id, uuid, `airport_name`, `flight_no`, `boarding_time`, `departure_time`, `seat`, ispaid) VALUES ( ?,  ?, ?, ?, ?, ?, ?, 0)",
+                        [t_id, uuid, from, 'A909', '09:00', depart, seat.substr(0, 3)], function (error, result, fields) {
                             if (result) {
+                                for (let index = 0; index < meals.length; index++) {
+                                    db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)",
+                                        [t_id, meals[index].meal.text, meals[index].qty.value, meals[index].meal.value, '', 0.0], function (error, result, fields) {
+                                            
+                                        }
+                                    );
+                                }
                                 res.send({ status: 0, msg: 'done', data: result });
                             } else {
                                 res.send({ msg: 'Something went wrong', status: 1 });
+                                console.log(error);
                             }
-                        });
+                        }
+                    );
                 } else {
                     res.send({ msg: "Could not add ticket", status: 1, });
                 }
@@ -491,17 +499,17 @@ app.post('/get_user_tickets', (req, res, next) => {
 
 app.post('/add_user_payment', (req, res, next) => {
     var uuid = req.body.uuid;
-    var payment_type = req.body.payment_type;
-    var amount =req.body.amount;
+    var payment_type = /*req.body.payment_type;*/ 1;
+    var amount = req.body.amount;
     var card_number = req.body.card_number;
     var cvv = req.body.cvv;
     var expire_date = req.body.expire_date;
-    var status = req.body.status;
-    status = '0';
+    var status = /*req.body.status;*/ 1;
+    var ticket_id = req.body.ticket_id;
 
     try {
-        db.query("INSERT INTO `payment` ( `ticket_id`,uuid,  `payment_type`, `amount`, `card_number`, `cvv`, `expire_date`, `status`) VALUES ('', '', '', '', '', '', '')",
-            [uuid], function (err, rows, fields) {
+        db.query("INSERT INTO `payment` ( `ticket_id`,  `payment_type`, `amount`, `card_number`, `cvv`, `expire_date`, `status`) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [ticket_id, payment_type, amount, card_number, cvv, expire_date, status], function (err, rows, fields) {
                 if (rows) {
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
