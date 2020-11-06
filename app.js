@@ -477,7 +477,8 @@ app.post('/register_admin', (req, res, next) => {
     }
 })
 
-app.post('/get_user_tickets', (req, res, next) => {    
+app.post('/get_user_tickets', (req, res, next) => { 
+    var searchText = req.body.searchText;
     try {
         db.query("SELECT * FROM `ticket` WHERE `airport_name` LIKE '%"+searchText+"%' OR `seat` LIKE '%"+searchText+"%' OR `boarding_time` LIKE '%"+searchText+"%'",
             [uuid], function (err, rows, fields) {
