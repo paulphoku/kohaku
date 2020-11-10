@@ -10,6 +10,8 @@ var bodyParser = require('body-parser');
 const cors = require('cors');
 "use strict";
 const nodemailer = require("nodemailer");
+const PDFDocument = require('pdfkit');
+const fs = require('fs');
 
 //Defining the PORT
 const port = process.env.PORT || 8080;
@@ -108,7 +110,34 @@ async function verifyEmail(uid, email) {
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
+}
 
+function generatePdf(uuid, t_id, user_names, depart, _return, airport_name, seat, adults, children, amt) {
+
+    // Create a document
+    const doc = new PDFDocument();
+
+    // Pipe its output somewhere, like to a file or HTTP response
+    // See below for browser usage
+    doc.pipe(fs.createWriteStream('./public/'+uuid+t_id+'.pdf'));
+
+    // Embed a font, set the font size, and render some text
+    doc
+        .fontSize(30)
+        .text('Air Food: Ticket!\n\n', 100, 100);
+
+    doc
+        .fontSize(15)
+        .text("Class: "+user_names+"\nAirport Name: "+airport_name+"\nDeparture : "+depart+"\nTicket no: "+t_id+"\nSeat no: "+seat+"", 100, 200);
+    
+
+        doc
+        .fontSize(15)
+        .text("Adults: "+adults+"\nChildren: "+children+"\n\nAmount Total: R"+amt+"", 100, 300);
+    
+
+        // Finalize PDF file
+    doc.end();
 }
 
 const app = express();
@@ -346,6 +375,7 @@ app.post('/add_ticket', (req, res, next) => {
     var Class = req.body.Class;
     var totalAmt = req.body.totalAmt;
     var seat = Class.substr(0, 1) + '' + getRandomArbitrary(1, 90);
+    var names;
 
     try {
         db.query("INSERT INTO `booking` (uuid,  `class`, `departure`, `destination`, `depart_date`, `return_date`, `total_amount`) VALUES (?,  ?, ?, ?, ?, ?, ?)",
@@ -364,11 +394,12 @@ app.post('/add_ticket', (req, res, next) => {
                                 for (let index = 0; index < meals.length; index++) {
                                     db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)",
                                         [t_id, meals[index].meal.text, meals[index].qty.value, meals[index].meal.value, '', 0.0], function (error, result, fields) {
-                                            
+
                                         }
                                     );
                                 }
-                                res.send({ status: 0, msg: 'done', data: result , t_id: t_id});
+                                generatePdf(uuid, t_id, Class, depart, Return, from.substr(0, from.length-3)+' International Airport' , seat.substr(0, 3), adults, children, totalAmt);
+                                res.send({ status: 0, msg: 'done', data: result, t_id: t_id });
                             } else {
                                 res.send({ msg: 'Something went wrong', status: 1 });
                                 console.log(error);
@@ -477,13 +508,14 @@ app.post('/register_admin', (req, res, next) => {
     }
 })
 
-app.post('/get_user_tickets', (req, res, next) => { 
+app.post('/get_user_tickets', (req, res, next) => {
     var searchText = req.body.searchText;
+    var uuid = req.body.uuid;
     try {
-        db.query("SELECT * FROM `ticket` WHERE `airport_name` LIKE '%"+searchText+"%' OR `seat` LIKE '%"+searchText+"%' OR `boarding_time` LIKE '%"+searchText+"%'",
+        db.query("SELECT * FROM `ticket` WHERE (boarding_time LIKE '%" + searchText + "%' OR airport_name LIKE '%" + searchText + "%' OR seat LIKE '%%') AND (uuid = '" + uuid + "')",
             [uuid], function (err, rows, fields) {
                 if (rows) {
-                    console.log(searchText);
+                    console.log(uuid);
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
                     console.log(err);
@@ -525,8 +557,17 @@ app.post('/add_user_payment', (req, res, next) => {
 
 //index
 app.get('/', (req, res, next) => {
+    //generatePdf('52767ebf-8536-452a-9503-d2e03547cbbb'+45, 'paul phoku', '2020-11-12', '2020-11-2-', 'Cape Town Airport','E45');
     res.send({ msg: "Welcome to Kohaku!" });
 })
+
+app.get('/download/:filename', function(req, res){
+    let filename = req.params.filename;
+    console.log(filename);
+
+    const file = `${__dirname}/public/`+filename;
+    res.download(file); // Set disposition and send it.
+  });
 
 //start server
 app.listen(port, () => {
