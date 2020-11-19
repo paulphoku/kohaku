@@ -436,7 +436,7 @@ app.post('/add_ticket', (req, res, next) => {
 //get all users
 app.post('/get_all_verrified_users', (req, res, next) => {
     try {
-        db.query("SELECT DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE isVerified=1",
+        db.query("SELECT uuid,DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE isVerified=1",
             [], function (err, rows, fields) {
 
                 if (rows) {
@@ -453,7 +453,7 @@ app.post('/get_all_verrified_users', (req, res, next) => {
 })
 app.post('/get_all_nonverrified_users', (req, res, next) => {
     try {
-        db.query("SELECT DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE isVerified=0",
+        db.query("SELECT uuid,DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE isVerified=0",
             [], function (err, rows, fields) {
 
                 if (rows) {
@@ -471,7 +471,7 @@ app.post('/get_all_nonverrified_users', (req, res, next) => {
 app.post('/get_all_users_by_search', (req, res, next) => {
     var searchText = req.body.searchText;
     try {
-        db.query("SELECT DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at,  `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE `created_at` LIKE '%" + searchText + "%' OR `email` LIKE '%" + searchText + "%' OR role LIKE '%" + searchText + "%' ",
+        db.query("SELECT uuid,DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at,  `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE `created_at` LIKE '%" + searchText + "%' OR `email` LIKE '%" + searchText + "%' OR role LIKE '%" + searchText + "%' ",
             [], function (err, rows, fields) {
                 if (rows) {
                     res.send({ status: 0, msg: 'done', data: rows });
@@ -487,7 +487,7 @@ app.post('/get_all_users_by_search', (req, res, next) => {
 })
 app.post('/get_all_users', (req, res, next) => {
     try {
-        db.query("SELECT  DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`,`gender`,`province`, `role`, `isVerified` FROM `user`",
+        db.query("SELECT uuid, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`,`gender`,`province`, `role`, `isVerified` FROM `user`",
             [], function (err, rows, fields) {
 
                 if (rows) {
