@@ -1,4 +1,4 @@
-//Author paulphoku@gmail.com
+//Author ********************
 //Restful apis by NodeJs
 //created on 31-10-2020
 
@@ -112,14 +112,14 @@ async function verifyEmail(uid, email) {
     }
 }
 
-function generatePdf(uuid, t_id, user_names, depart, _return, airport_name, seat, adults, children, amt) {
+function generatePdf(uuid, t_id, user_names, time_slot, _return, airport_name, seat, adults, children, amt) {
 
     // Create a document
     const doc = new PDFDocument();
 
     // Pipe its output somewhere, like to a file or HTTP response
     // See below for browser usage
-    doc.pipe(fs.createWriteStream('./public/'+uuid+t_id+'.pdf'));
+    doc.pipe(fs.createWriteStream('./public/' + uuid + t_id + '.pdf'));
 
     // Embed a font, set the font size, and render some text
     doc
@@ -128,15 +128,15 @@ function generatePdf(uuid, t_id, user_names, depart, _return, airport_name, seat
 
     doc
         .fontSize(15)
-        .text("Class: "+user_names+"\nAirport Name: "+airport_name+"\nDeparture : "+depart+"\nTicket no: "+t_id+"\nSeat no: "+seat+"", 100, 200);
-    
+        .text("Class: " + user_names + "\nAirport Name: " + airport_name + "\nDeparture : " + time_slot + "\nTicket no: " + t_id + "\nSeat no: " + seat + "", 100, 200);
 
-        doc
+
+    doc
         .fontSize(15)
-        .text("Adults: "+adults+"\nChildren: "+children+"\n\nAmount Total: R"+amt+"", 100, 300);
-    
+        .text("Adults: " + adults + "\nChildren: " + children + "\n\nAmount Total: R" + amt + "", 100, 300);
 
-        // Finalize PDF file
+
+    // Finalize PDF file
     doc.end();
 }
 
@@ -197,6 +197,9 @@ app.post('/login', (req, res, next) => {
 
     try {
         db.query('Select * From user Where email=?', [email], function (error, rows, fields) {
+            if (error) {
+                console.log(error);
+            }
             if (rows.length > 0 && rows[0].salt) {
                 var salt = rows[0].salt;//Getsalt from database
                 var encrypted_password = rows[0].encrypted_password;
@@ -205,11 +208,14 @@ app.post('/login', (req, res, next) => {
                 if (encrypted_password == hashed_password) {
                     if (rows[0].isVerified == 1) {
                         res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+                    } else 
+                    if (rows[0].isVerified == 2) {
+                        res.send({ msg: "Account is Deactivated, Reactivate in order to login to the platform", status: 1 });
                     } else {
-                        res.send({ msg: "Email not is verified, check your emails and verify", status: 1 });
+                        res.send({ msg: "Email not is verified, check your emails and verify", status: 2 });
                     }
                 } else {
-                    res.send({ msg: "Wrong password", status: 1 });
+                    res.send({ msg: "Wrong password", status: 3 });
                 }
             } else {
                 res.send({ msg: "user does not exist or invalid email recieved", status: 2 });
@@ -373,8 +379,19 @@ app.post('/add_ticket', (req, res, next) => {
     var child_price = req.body.child_price;
     var meals = JSON.parse(req.body.meals);
     var Class = req.body.Class;
+    var time_slot =req.body.time_slot;
     var totalAmt = req.body.totalAmt;
-    var seat = Class.substr(0, 1) + '' + getRandomArbitrary(1, 90);
+    var seat = getRandomArbitrary(1, 90)
+    if(children+adults <=1){
+        seat = Class.substr(0, 1) + '' + Number(String(seat).substr(0, 2));
+    }else{
+        seat = Class.substr(0, 1) + '' + String(seat).substr(0, 2);
+        n = (Number(seat.substr(1, 2)));
+        for (let index = 1; index < (Number(children)+Number(adults)); index++) {
+            n++;
+            seat +=' ,'+ Class.substr(0, 1) + '' + n;
+        }
+    }
     var names;
 
     try {
@@ -389,7 +406,7 @@ app.post('/add_ticket', (req, res, next) => {
                     Return = Return.substr(11, 5);
                     //res.send({ status: 0, msg: 'Booked ticket', data: rows });
                     db.query("INSERT INTO `ticket` (ticket_id, uuid, `airport_name`, `flight_no`, `boarding_time`, `departure_time`, `seat`, ispaid) VALUES ( ?,  ?, ?, ?, ?, ?, ?, 0)",
-                        [t_id, uuid, from, 'A909', '09:00', depart, seat.substr(0, 3)], function (error, result, fields) {
+                        [t_id, uuid, from, 'A909', '09:00', depart, seat], function (error, result, fields) {
                             if (result) {
                                 for (let index = 0; index < meals.length; index++) {
                                     db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)",
@@ -398,7 +415,7 @@ app.post('/add_ticket', (req, res, next) => {
                                         }
                                     );
                                 }
-                                generatePdf(uuid, t_id, Class, depart, Return, from.substr(0, from.length-3)+' International Airport' , seat.substr(0, 3), adults, children, totalAmt);
+                                generatePdf(uuid, t_id, Class, time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt);
                                 res.send({ status: 0, msg: 'done', data: result, t_id: t_id });
                             } else {
                                 res.send({ msg: 'Something went wrong', status: 1 });
@@ -512,10 +529,9 @@ app.post('/get_user_tickets', (req, res, next) => {
     var searchText = req.body.searchText;
     var uuid = req.body.uuid;
     try {
-        db.query("SELECT * FROM `ticket` WHERE (boarding_time LIKE '%" + searchText + "%' OR airport_name LIKE '%" + searchText + "%' OR seat LIKE '%%') AND (uuid = '" + uuid + "')",
+        db.query("SELECT * FROM `ticket` WHERE (boarding_time LIKE '%" + searchText + "%' OR airport_name LIKE '%" + searchText + "%' OR seat LIKE '%" + searchText + "%') AND uuid = '" + uuid + "'",
             [uuid], function (err, rows, fields) {
                 if (rows) {
-                    console.log(uuid);
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
                     console.log(err);
@@ -527,7 +543,6 @@ app.post('/get_user_tickets', (req, res, next) => {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
 })
-
 
 app.post('/add_user_payment', (req, res, next) => {
     var uuid = req.body.uuid;
@@ -561,13 +576,58 @@ app.get('/', (req, res, next) => {
     res.send({ msg: "Welcome to Kohaku!" });
 })
 
-app.get('/download/:filename', function(req, res){
+app.get('/download/:filename', function (req, res) {
     let filename = req.params.filename;
     console.log(filename);
 
-    const file = `${__dirname}/public/`+filename;
+    const file = `${__dirname}/public/` + filename;
     res.download(file); // Set disposition and send it.
-  });
+});
+
+//activate user
+app.post('/activate_user', (req, res, next) => {
+    var email = req.body.email;
+    try {
+        db.query("SELECT `uuid` FROM user WHERE `user`.`email` = ?", [email], function (err, rows, fields) {
+            if (err) {
+                console.log('MySQL ERROR', err);
+            }
+
+            if (rows) {
+                verifyEmail(rows[0].uuid, email);
+                res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+            } else {
+                res.send({ msg: "Could not activate user", status: 1, });
+            }
+        }
+        );
+    } catch (err) {
+        res.send({ msg: 'Something went wrong', status: 2 });
+    }
+})
+
+//verify email
+app.post('/deactivate_user', (req, res, next) => {
+    var uid = req.body.uuid;
+    try {
+        db.query("SELECT * FROM user WHERE uuid = ?", [uid], function (err, rows1, fields) {
+            if (err) {
+                console.log('MySQL ERROR', err);
+                res.send({ msg: "Could not verify password", status: 1 });
+            }
+            if (rows1.length > 0) {
+                db.query("UPDATE `user` SET`isVerified` =? WHERE uuid = ?", [2, uid], function (err, rows, fields) {
+                    res.send({ msg: "Succesfully Deactivated!", status: 0 });
+                });
+            } else {
+                res.send({ msg: "Could not deactivate user", status: 1 });
+            }
+        });
+    } catch (err) {
+        res.send({ msg: 'Something went wrong', status: 2 });
+    }
+})
+
 
 //start server
 app.listen(port, () => {

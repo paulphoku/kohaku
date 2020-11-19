@@ -3,13 +3,20 @@ const mysql = require('mysql');
 // const bodyParser = require('body-parser');
 
 
-//- Connection configuration
+// - Connection configuration
 var db_config = {
     host: 'bbu5zmw8d8gzsue0km7n-mysql.services.clever-cloud.com',
     user: 'uitpkpdgmwkcwamk',
     password: 'Ju3vgZ1X638e2xWkTy2I',
     database: 'bbu5zmw8d8gzsue0km7n'
 };
+
+//localhost
+// var db_config = {
+//     host: '127.0.0.1',
+//     user: 'root',
+//     database: 'bbu5zmw8d8gzsue0km7n'
+// };
 
 var smtp = {
     user: 'air.food@outlook.com',
