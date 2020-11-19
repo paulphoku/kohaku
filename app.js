@@ -436,7 +436,7 @@ app.post('/add_ticket', (req, res, next) => {
 //get all users
 app.post('/get_all_verrified_users', (req, res, next) => {
     try {
-        db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user` WHERE isVerified=1",
+        db.query("SELECT DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE isVerified=1",
             [], function (err, rows, fields) {
 
                 if (rows) {
@@ -451,10 +451,9 @@ app.post('/get_all_verrified_users', (req, res, next) => {
         console.log(err);
     }
 })
-
 app.post('/get_all_nonverrified_users', (req, res, next) => {
     try {
-        db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user` WHERE isVerified=0",
+        db.query("SELECT DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE isVerified=0",
             [], function (err, rows, fields) {
 
                 if (rows) {
@@ -469,11 +468,10 @@ app.post('/get_all_nonverrified_users', (req, res, next) => {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
 })
-
 app.post('/get_all_users_by_search', (req, res, next) => {
     var searchText = req.body.searchText;
     try {
-        db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user` WHERE `created_at` LIKE '%" + searchText + "%' OR `email` LIKE '%" + searchText + "%' OR role LIKE '%" + searchText + "%' ",
+        db.query("SELECT DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at,  `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE `created_at` LIKE '%" + searchText + "%' OR `email` LIKE '%" + searchText + "%' OR role LIKE '%" + searchText + "%' ",
             [], function (err, rows, fields) {
                 if (rows) {
                     res.send({ status: 0, msg: 'done', data: rows });
@@ -487,10 +485,9 @@ app.post('/get_all_users_by_search', (req, res, next) => {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
 })
-
 app.post('/get_all_users', (req, res, next) => {
     try {
-        db.query("SELECT `id`, `uuid`, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `updated_at`, `name`, `surname`, `email`, `cell`, `gender`, `province`, `salt`, `encrypted_password`, `role`, `date_of_birth`, `one_time_pin`, `isVerified` FROM `user`",
+        db.query("SELECT  DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`,`gender`,`province`, `role`, `isVerified` FROM `user`",
             [], function (err, rows, fields) {
 
                 if (rows) {
@@ -505,7 +502,6 @@ app.post('/get_all_users', (req, res, next) => {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
 })
-
 app.post('/register_admin', (req, res, next) => {
     var uuid = req.body.uuid;
     var ur = req.body.ur;
@@ -524,7 +520,6 @@ app.post('/register_admin', (req, res, next) => {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
 })
-
 app.post('/get_user_tickets', (req, res, next) => {
     var searchText = req.body.searchText;
     var uuid = req.body.uuid;
@@ -543,7 +538,6 @@ app.post('/get_user_tickets', (req, res, next) => {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
 })
-
 app.post('/add_user_payment', (req, res, next) => {
     var uuid = req.body.uuid;
     var payment_type = /*req.body.payment_type;*/ 1;
@@ -627,7 +621,6 @@ app.post('/deactivate_user', (req, res, next) => {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
 })
-
 
 //start server
 app.listen(port, () => {
