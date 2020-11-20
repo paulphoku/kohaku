@@ -532,7 +532,7 @@ app.post('/get_user_tickets', (req, res, next) => {
     var searchText = req.body.searchText;
     var uuid = req.body.uuid;
     try {
-        db.query("SELECT * FROM `ticket` WHERE (boarding_time LIKE '%" + searchText + "%' OR airport_name LIKE '%" + searchText + "%' OR seat LIKE '%" + searchText + "%') AND uuid = '" + uuid + "'",
+        db.query("SELECT * FROM `ticket` WHERE (boarding_time LIKE '%" + searchText + "%' OR airport_name LIKE '%" + searchText + "%' OR seat LIKE '%" + searchText + "%') AND uuid = '" + uuid + "' order by ticket_id desc",
             [uuid], function (err, rows, fields) {
                 if (rows) {
                     res.send({ status: 0, msg: 'done', data: rows });

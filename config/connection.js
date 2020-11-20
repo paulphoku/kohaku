@@ -24,7 +24,7 @@ var smtp = {
 }
 
 //- Create the connection variable
-var db = mysql.createPool(db_config);
+var db = mysql.createPool('mysql://uitpkpdgmwkcwamk:Ju3vgZ1X638e2xWkTy2I@bbu5zmw8d8gzsue0km7n-mysql.services.clever-cloud.com:3306/bbu5zmw8d8gzsue0km7n');
 
 // //- Establish a new connection
 // db.connect(function(err){
