@@ -181,7 +181,7 @@ app.post('/register', (req, res, next) => {
                 );
             }
         });
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
@@ -221,7 +221,7 @@ app.post('/login', (req, res, next) => {
                 res.send({ msg: "user does not exist or invalid email recieved", status: 2 });
             }
         });
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong' + err, status: 2 });
     }
@@ -242,7 +242,7 @@ app.post('/getUser', (req, res, next) => {
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
-    db.releaseConnection(db);
+    
 });
 
 //update password
@@ -266,7 +266,7 @@ app.post('/update_password', (req, res, next) => {
                 }
             }
         );
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
@@ -294,7 +294,7 @@ app.get('/resetPassword/:email', (req, res, next) => {
             }
         }
     );
-    db.releaseConnection(db);
+    
 })
 
 //verify email
@@ -314,7 +314,7 @@ app.get('/verifyemail/:uuid', (req, res, next) => {
                 res.send({ msg: "<h1>Email: " + rows1[0].email + " alredy verified</h1>", status: 1 });
             }
         });
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
@@ -335,7 +335,7 @@ app.post('/delete_user', (req, res, next) => {
                 res.send({ msg: "Could not delete user", status: 1, });
             }
         });
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
@@ -363,7 +363,7 @@ app.post('/update_user', (req, res, next) => {
                 }
             }
         );
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
@@ -431,7 +431,7 @@ app.post('/add_ticket', (req, res, next) => {
                 }
             }
         );
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
@@ -450,7 +450,7 @@ app.post('/get_all_verrified_users', (req, res, next) => {
                 }
             }
         );
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
         console.log(err);
@@ -469,7 +469,7 @@ app.post('/get_all_nonverrified_users', (req, res, next) => {
                 }
             }
         );
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
@@ -504,7 +504,7 @@ app.post('/get_all_users', (req, res, next) => {
                 }
             }
         );
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
@@ -523,7 +523,7 @@ app.post('/register_admin', (req, res, next) => {
                 }
             }
         );
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
@@ -542,7 +542,7 @@ app.post('/get_user_tickets', (req, res, next) => {
                 }
             }
         );
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
@@ -568,7 +568,7 @@ app.post('/add_user_payment', (req, res, next) => {
                 }
             }
         );
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
@@ -605,7 +605,7 @@ app.post('/activate_user', (req, res, next) => {
             }
         }
         );
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
@@ -628,7 +628,7 @@ app.post('/deactivate_user', (req, res, next) => {
                 res.send({ msg: "Could not deactivate user", status: 1 });
             }
         });
-        db.releaseConnection(db);
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
