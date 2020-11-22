@@ -384,7 +384,7 @@ app.post('/add_ticket', (req, res, next) => {
     var Class = req.body.Class;
     var time_slot =req.body.time_slot;
     var totalAmt = req.body.totalAmt;
-    var seat = getRandomArbitrary(1, 90)
+    var seat = getRandomArbitrary(1, 90);
     if(children+adults <=1){
         seat = Class.substr(0, 1) + '' + Number(String(seat).substr(0, 2));
     }else{
@@ -409,7 +409,7 @@ app.post('/add_ticket', (req, res, next) => {
                     Return = Return.substr(11, 5);
                     //res.send({ status: 0, msg: 'Booked ticket', data: rows });
                     db.query("INSERT INTO `ticket` (ticket_id, uuid, `airport_name`, `flight_no`, `boarding_time`, `departure_time`, `seat`, ispaid) VALUES ( ?,  ?, ?, ?, ?, ?, ?, 0)",
-                        [t_id, uuid, from, 'A909', '09:00', depart, seat], function (error, result, fields) {
+                        [t_id, uuid, from, 'A909', time_slot, time_slot, seat], function (error, result, fields) {
                             if (result) {
                                 for (let index = 0; index < meals.length; index++) {
                                     db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)",
@@ -609,7 +609,8 @@ app.post('/activate_user', (req, res, next) => {
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
-})
+}
+);
 
 //verify email
 app.post('/deactivate_user', (req, res, next) => {
@@ -632,7 +633,33 @@ app.post('/deactivate_user', (req, res, next) => {
     } catch (err) {
         res.send({ msg: 'Something went wrong', status: 2 });
     }
-})
+});
+
+//activate user
+app.post('/get_all_bookings', (req, res, next) => {
+    var searchText = req.body.searchText;
+    try {
+        db.query("SELECT COUNT(destination) as tickets, SUM(total_amount) as tot_amt, destination,DATE_FORMAT(depart_date,'%Y-%m-%d') as depart_date FROM booking WHERE destination LIKE '%"+searchText+"%' OR  depart_date LIKE '%"+searchText+"%' GROUP BY destination,  depart_date ORDER BY depart_date DESC", [], function (err, rows, fields) {
+            if (err) {
+                console.log('MySQL ERROR', err);
+            }
+
+            if (rows) {
+                res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+            } else {
+                res.send({ msg: "Could not get bookings", status: 1, });
+            }
+        }
+        );
+        
+    } catch (err) {
+        res.send({ msg: 'Something went wrong', status: 2 });
+        console.log(err);
+    }
+}
+);
+
+
 
 //start server
 app.listen(port, () => {
