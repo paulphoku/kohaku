@@ -386,7 +386,6 @@ app.post('/add_ticket', (req, res, next) => {
     var username = req.body.username;
     var totalAmt = req.body.totalAmt;
     var seat = getRandomArbitrary(1, 90);
-    var t_id;
     if (children + adults <= 1) {
         seat = Class.substr(0, 1) + '' + Number(String(seat).substr(0, 2));
     } else {
@@ -400,6 +399,8 @@ app.post('/add_ticket', (req, res, next) => {
     var names;
 
     try {
+        var t_id = 0;
+
         db.query("INSERT INTO `booking` (uuid,  `class`, `departure`, `destination`, `depart_date`, `return_date`, `total_amount`) VALUES (?,  ?, ?, ?, ?, ?, ?)",
             [uuid, Class, from, to, depart.substr(0, 10), Return.substr(0, 10), totalAmt], function (err, rows0, fields) {
                 t_id = rows0.insertId;
