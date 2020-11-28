@@ -558,7 +558,7 @@ app.post('/add_user_payment', (req, res, next) => {
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
                     console.log(err);
-                    res.send({ msg: "Something went wrong", status: 1 });
+                    res.send({ msg: "Something went wrong"+err, status: 1 });
                 }
             }
         );
