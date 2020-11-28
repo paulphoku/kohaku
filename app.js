@@ -397,9 +397,10 @@ app.post('/add_ticket', (req, res, next) => {
         }
     }
     var names;
-
+    var t_id = 0;
+    
     try {
-        var t_id = 0;
+        
 
         db.query("INSERT INTO `booking` (uuid,  `class`, `departure`, `destination`, `depart_date`, `return_date`, `total_amount`) VALUES (?,  ?, ?, ?, ?, ?, ?)",
             [uuid, Class, from, to, depart.substr(0, 10), Return.substr(0, 10), totalAmt], function (err, rows0, fields) {
