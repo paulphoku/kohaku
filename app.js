@@ -86,7 +86,7 @@ async function resetPass(email, password, res) {
         }
     } catch (err) {
         console.log(err);
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 
 
@@ -107,7 +107,7 @@ async function verifyEmail(uid, email) {
         console.log(uid);
         console.log("Message sent: %s", info.messageId);
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 }
 
@@ -127,7 +127,7 @@ function generatePdf(uuid, t_id, user_names, time_slot, _return, airport_name, s
 
     doc
         .fontSize(15)
-        .text("Booked by: " + username + "\nClass: " + user_names + "\nAirport Name: " + airport_name + "\nDeparture : " + time_slot + "\nTicket no: " + t_id + "\nSeat no: " + seat + "", 100, 200);
+        .text("Booked by: "+username+"\nClass: " + user_names + "\nAirport Name: " + airport_name + "\nDeparture : " + time_slot + "\nTicket no: " + t_id + "\nSeat no: " + seat + "", 100, 200);
 
 
     doc
@@ -181,9 +181,9 @@ app.post('/register', (req, res, next) => {
                 );
             }
         });
-
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 
 })
@@ -208,12 +208,12 @@ app.post('/login', (req, res, next) => {
                 if (encrypted_password == hashed_password) {
                     if (rows[0].isVerified == 1) {
                         res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
-                    } else
-                        if (rows[0].isVerified == 2) {
-                            res.send({ msg: "Account is Deactivated, Reactivate in order to login to the platform", status: 1 });
-                        } else {
-                            res.send({ msg: "Email not is verified, check your emails and verify", status: 2 });
-                        }
+                    } else 
+                    if (rows[0].isVerified == 2) {
+                        res.send({ msg: "Account is Deactivated, Reactivate in order to login to the platform", status: 1 });
+                    } else {
+                        res.send({ msg: "Email not is verified, check your emails and verify", status: 2 });
+                    }
                 } else {
                     res.send({ msg: "Wrong password", status: 3 });
                 }
@@ -221,7 +221,7 @@ app.post('/login', (req, res, next) => {
                 res.send({ msg: "user does not exist or invalid email recieved", status: 2 });
             }
         });
-
+        
     } catch (err) {
         res.send({ msg: 'Something went wrong' + err, status: 2 });
     }
@@ -240,9 +240,9 @@ app.post('/getUser', (req, res, next) => {
             }
         });
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
-
+    
 });
 
 //update password
@@ -266,9 +266,9 @@ app.post('/update_password', (req, res, next) => {
                 }
             }
         );
-
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 
@@ -294,7 +294,7 @@ app.get('/resetPassword/:email', (req, res, next) => {
             }
         }
     );
-
+    
 })
 
 //verify email
@@ -314,9 +314,9 @@ app.get('/verifyemail/:uuid', (req, res, next) => {
                 res.send({ msg: "<h1>Email: " + rows1[0].email + " alredy verified</h1>", status: 1 });
             }
         });
-
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 
@@ -335,9 +335,9 @@ app.post('/delete_user', (req, res, next) => {
                 res.send({ msg: "Could not delete user", status: 1, });
             }
         });
-
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 
@@ -363,9 +363,9 @@ app.post('/update_user', (req, res, next) => {
                 }
             }
         );
-
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 
@@ -382,54 +382,59 @@ app.post('/add_ticket', (req, res, next) => {
     var child_price = req.body.child_price;
     var meals = JSON.parse(req.body.meals);
     var Class = req.body.Class;
-    var time_slot = req.body.time_slot;
+    var time_slot =req.body.time_slot;
     var username = req.body.username;
     var totalAmt = req.body.totalAmt;
     var seat = getRandomArbitrary(1, 90);
-    if (children + adults <= 1) {
+    if(children+adults <=1){
         seat = Class.substr(0, 1) + '' + Number(String(seat).substr(0, 2));
-    } else {
+    }else{
         seat = Class.substr(0, 1) + '' + String(seat).substr(0, 2);
         n = (Number(seat.substr(1, 2)));
-        for (let index = 1; index < (Number(children) + Number(adults)); index++) {
+        for (let index = 1; index < (Number(children)+Number(adults)); index++) {
             n++;
-            seat += ' ,' + Class.substr(0, 1) + '' + n;
+            seat +=' ,'+ Class.substr(0, 1) + '' + n;
         }
     }
     var names;
-    var t_id = 0;
-    
-    try {
-        
 
+    try {
         db.query("INSERT INTO `booking` (uuid,  `class`, `departure`, `destination`, `depart_date`, `return_date`, `total_amount`) VALUES (?,  ?, ?, ?, ?, ?, ?)",
             [uuid, Class, from, to, depart.substr(0, 10), Return.substr(0, 10), totalAmt], function (err, rows0, fields) {
-                t_id = rows0.insertId;
-            }
-        );
-
-        depart = depart.substr(11, 5);
-        Return = Return.substr(11, 5);
-        //res.send({ status: 0, msg: 'Booked ticket', data: rows });
-        db.query("INSERT INTO `ticket` (ticket_id, uuid, `airport_name`, `flight_no`, `boarding_time`, `departure_time`, `seat`, ispaid) VALUES ( ?,  ?, ?, ?, ?, ?, ?, 0)",
-            [t_id, uuid, from, 'A909', time_slot, time_slot, seat], function (error, result, fields) {
-
-            }
-        );
-
-        for (let index = 0; index < meals.length; index++) {
-            db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)",
-                [t_id, meals[index].meal.text, meals[index].qty.value, meals[index].meal.value, '', 0.0], function (error, result, fields) {
-
+                if (err) {
+                    console.log('MySQL ERROR', err);
                 }
-            );
-        }
-        generatePdf(uuid, t_id, Class, time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt, username);
-        res.send({ status: 0, msg: 'done', t_id: t_id });
+                if (rows0) {
+                    let t_id = rows0.insertId;
+                    depart = depart.substr(11, 5);
+                    Return = Return.substr(11, 5);
+                    //res.send({ status: 0, msg: 'Booked ticket', data: rows });
+                    db.query("INSERT INTO `ticket` (ticket_id, uuid, `airport_name`, `flight_no`, `boarding_time`, `departure_time`, `seat`, ispaid) VALUES ( ?,  ?, ?, ?, ?, ?, ?, 0)",
+                        [t_id, uuid, from, 'A909', time_slot, time_slot, seat], function (error, result, fields) {
+                            if (result) {
+                                for (let index = 0; index < meals.length; index++) {
+                                    db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)",
+                                        [t_id, meals[index].meal.text, meals[index].qty.value, meals[index].meal.value, '', 0.0], function (error, result, fields) {
 
-
+                                        }
+                                    );
+                                }
+                                generatePdf(uuid, t_id, Class, time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt, username);
+                                res.send({ status: 0, msg: 'done', data: result, t_id: t_id });
+                            } else {
+                                res.send({ msg: 'Something went wrong'+err, status: 1 });
+                                console.log(error);
+                            }
+                        }
+                    );
+                } else {
+                    res.send({ msg: "Could not add ticket", status: 1, });
+                }
+            }
+        );
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 
@@ -446,9 +451,9 @@ app.post('/get_all_verrified_users', (req, res, next) => {
                 }
             }
         );
-
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
         console.log(err);
     }
 })
@@ -465,9 +470,9 @@ app.post('/get_all_nonverrified_users', (req, res, next) => {
                 }
             }
         );
-
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 app.post('/get_all_users_by_search', (req, res, next) => {
@@ -484,7 +489,7 @@ app.post('/get_all_users_by_search', (req, res, next) => {
             }
         );
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 app.post('/get_all_users', (req, res, next) => {
@@ -500,9 +505,9 @@ app.post('/get_all_users', (req, res, next) => {
                 }
             }
         );
-
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 app.post('/register_admin', (req, res, next) => {
@@ -519,9 +524,9 @@ app.post('/register_admin', (req, res, next) => {
                 }
             }
         );
-
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 app.post('/get_user_tickets', (req, res, next) => {
@@ -538,9 +543,9 @@ app.post('/get_user_tickets', (req, res, next) => {
                 }
             }
         );
-
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 app.post('/add_user_payment', (req, res, next) => {
@@ -560,13 +565,13 @@ app.post('/add_user_payment', (req, res, next) => {
                     res.send({ status: 0, msg: 'done', data: rows });
                 } else {
                     console.log(err);
-                    res.send({ msg: "Something went wrong"+err, status: 1 });
+                    res.send({ msg: "Something went wrong", status: 1 });
                 }
             }
         );
-
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 
@@ -601,9 +606,9 @@ app.post('/activate_user', (req, res, next) => {
             }
         }
         );
-
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 }
 );
@@ -625,9 +630,9 @@ app.post('/deactivate_user', (req, res, next) => {
                 res.send({ msg: "Could not deactivate user", status: 1 });
             }
         });
-
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 });
 
@@ -635,7 +640,7 @@ app.post('/deactivate_user', (req, res, next) => {
 app.post('/get_all_bookings', (req, res, next) => {
     var searchText = req.body.searchText;
     try {
-        db.query("SELECT COUNT(destination) as tickets, SUM(total_amount) as tot_amt, destination,DATE_FORMAT(depart_date,'%Y-%m-%d') as depart_date FROM booking WHERE destination LIKE '%" + searchText + "%' OR  depart_date LIKE '%" + searchText + "%' GROUP BY destination,  depart_date ORDER BY depart_date DESC", [], function (err, rows, fields) {
+        db.query("SELECT COUNT(destination) as tickets, SUM(total_amount) as tot_amt, destination,DATE_FORMAT(depart_date,'%Y-%m-%d') as depart_date FROM booking WHERE destination LIKE '%"+searchText+"%' OR  depart_date LIKE '%"+searchText+"%' GROUP BY destination,  depart_date ORDER BY depart_date DESC", [], function (err, rows, fields) {
             if (err) {
                 console.log('MySQL ERROR', err);
             }
@@ -647,9 +652,9 @@ app.post('/get_all_bookings', (req, res, next) => {
             }
         }
         );
-
+        
     } catch (err) {
-        res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
+        res.send({ msg: 'Something went wrong' +err, status: 2 , err:err});
         console.log(err);
     }
 }
