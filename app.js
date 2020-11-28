@@ -111,7 +111,7 @@ async function verifyEmail(uid, email) {
     }
 }
 
-function generatePdf(uuid, t_id, user_names, time_slot, _return, airport_name, seat, adults, children, amt) {
+function generatePdf(uuid, t_id, user_names, time_slot, _return, airport_name, seat, adults, children, amt, username) {
 
     // Create a document
     const doc = new PDFDocument();
@@ -127,7 +127,7 @@ function generatePdf(uuid, t_id, user_names, time_slot, _return, airport_name, s
 
     doc
         .fontSize(15)
-        .text("Class: " + user_names + "\nAirport Name: " + airport_name + "\nDeparture : " + time_slot + "\nTicket no: " + t_id + "\nSeat no: " + seat + "", 100, 200);
+        .text("Booked by: "+username+"\nClass: " + user_names + "\nAirport Name: " + airport_name + "\nDeparture : " + time_slot + "\nTicket no: " + t_id + "\nSeat no: " + seat + "", 100, 200);
 
 
     doc
@@ -383,6 +383,7 @@ app.post('/add_ticket', (req, res, next) => {
     var meals = JSON.parse(req.body.meals);
     var Class = req.body.Class;
     var time_slot =req.body.time_slot;
+    var username = req.body.username;
     var totalAmt = req.body.totalAmt;
     var seat = getRandomArbitrary(1, 90);
     if(children+adults <=1){
@@ -418,7 +419,7 @@ app.post('/add_ticket', (req, res, next) => {
                                         }
                                     );
                                 }
-                                generatePdf(uuid, t_id, Class, time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt);
+                                generatePdf(uuid, t_id, Class, time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt, username);
                                 res.send({ status: 0, msg: 'done', data: result, t_id: t_id });
                             } else {
                                 res.send({ msg: 'Something went wrong', status: 1 });
