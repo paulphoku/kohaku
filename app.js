@@ -423,7 +423,7 @@ app.post('/add_ticket', (req, res, next) => {
             );
         }
         generatePdf(uuid, t_id, Class, time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt, username);
-        res.send({ status: 0, msg: 'done', data: result, t_id: t_id });
+        res.send({ status: 0, msg: 'done', t_id: t_id });
 
 
     } catch (err) {
