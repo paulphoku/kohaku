@@ -86,7 +86,7 @@ async function resetPass(email, password, res) {
         }
     } catch (err) {
         console.log(err);
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 
 
@@ -107,7 +107,7 @@ async function verifyEmail(uid, email) {
         console.log(uid);
         console.log("Message sent: %s", info.messageId);
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 }
 
@@ -183,7 +183,7 @@ app.post('/register', (req, res, next) => {
         });
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 
 })
@@ -240,7 +240,7 @@ app.post('/getUser', (req, res, next) => {
             }
         });
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
     
 });
@@ -268,7 +268,7 @@ app.post('/update_password', (req, res, next) => {
         );
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 
@@ -316,7 +316,7 @@ app.get('/verifyemail/:uuid', (req, res, next) => {
         });
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 
@@ -337,7 +337,7 @@ app.post('/delete_user', (req, res, next) => {
         });
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 
@@ -365,7 +365,7 @@ app.post('/update_user', (req, res, next) => {
         );
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 
@@ -434,7 +434,7 @@ app.post('/add_ticket', (req, res, next) => {
         );
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 
@@ -453,7 +453,7 @@ app.post('/get_all_verrified_users', (req, res, next) => {
         );
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
         console.log(err);
     }
 })
@@ -472,7 +472,7 @@ app.post('/get_all_nonverrified_users', (req, res, next) => {
         );
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 app.post('/get_all_users_by_search', (req, res, next) => {
@@ -489,7 +489,7 @@ app.post('/get_all_users_by_search', (req, res, next) => {
             }
         );
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 app.post('/get_all_users', (req, res, next) => {
@@ -507,7 +507,7 @@ app.post('/get_all_users', (req, res, next) => {
         );
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 app.post('/register_admin', (req, res, next) => {
@@ -526,7 +526,7 @@ app.post('/register_admin', (req, res, next) => {
         );
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 app.post('/get_user_tickets', (req, res, next) => {
@@ -545,7 +545,7 @@ app.post('/get_user_tickets', (req, res, next) => {
         );
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 app.post('/add_user_payment', (req, res, next) => {
@@ -571,7 +571,7 @@ app.post('/add_user_payment', (req, res, next) => {
         );
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 })
 
@@ -608,7 +608,7 @@ app.post('/activate_user', (req, res, next) => {
         );
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 }
 );
@@ -632,7 +632,7 @@ app.post('/deactivate_user', (req, res, next) => {
         });
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
     }
 });
 
@@ -654,13 +654,11 @@ app.post('/get_all_bookings', (req, res, next) => {
         );
         
     } catch (err) {
-        res.send({ msg: 'Something went wrong', status: 2 , err:err});
+        res.send({ msg: 'Something went wrong'+err, status: 2 , err:err});
         console.log(err);
     }
 }
 );
-
-
 
 //start server
 app.listen(port, () => {
