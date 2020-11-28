@@ -402,11 +402,10 @@ app.post('/add_ticket', (req, res, next) => {
     try {
         db.query("INSERT INTO `booking` (uuid,  `class`, `departure`, `destination`, `depart_date`, `return_date`, `total_amount`) VALUES (?,  ?, ?, ?, ?, ?, ?)",
             [uuid, Class, from, to, depart.substr(0, 10), Return.substr(0, 10), totalAmt], function (err, rows0, fields) {
-
+                t_id = rows0.insertId;
             }
         );
 
-        t_id = rows0.insertId;
         depart = depart.substr(11, 5);
         Return = Return.substr(11, 5);
         //res.send({ status: 0, msg: 'Booked ticket', data: rows });
