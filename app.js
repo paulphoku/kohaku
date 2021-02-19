@@ -35,12 +35,12 @@ function getRandomArbitrary(min, max) {
 }
 
 //PASSWORD UTIL
-var getRandomString = function (length) {
+var getRandomString = function(length) {
     return crypto.randomBytes(Math.ceil(length / 2))
         .toString('hex') //convert to hexa format
         .slice(0, length); //return requred number of charecters
 };
-var sha512 = function (password, salt) {
+var sha512 = function(password, salt) {
     var hash = crypto.createHmac('sha512', salt); //Use SHA512
     hash.update(password);
     var value = hash.digest('hex');
@@ -55,6 +55,7 @@ function saltHashPassword(userPassword) {
     var passwordData = sha512(userPassword, salt);
     return passwordData;
 };
+
 function checkHashPassword(userPassword, salt) {
     var passwordData = sha512(userPassword, salt);
     return passwordData;
@@ -70,10 +71,10 @@ async function resetPass(email, password, res) {
             to: email, // list of receivers
             subject: "Forgot Password ✔", // Subject line
             text: "", // plain text body
-            html: "<b>Your password has been reseted here is your new password:</b>"
-                + "<br><h1>" + password + "</h1>"
-                + "<br><br> <p>login to the application using the new passsword and head to profile to add your own unique password!</p>"
-                + "<br><p>kind Regards</><br><p>Air Food ✈️", // html body
+            html: "<b>Your password has been reseted here is your new password:</b>" +
+                "<br><h1>" + password + "</h1>" +
+                "<br><br> <p>login to the application using the new passsword and head to profile to add your own unique password!</p>" +
+                "<br><p>kind Regards</><br><p>Air Food ✈️", // html body
         });
 
         console.log(password);
@@ -99,10 +100,10 @@ async function verifyEmail(uid, email) {
             from: '"Air Food ✈️" <air.food@outlook.com>', // sender address
             to: email, // list of receivers
             subject: "Verify email ✔", // Subject line
-            text: "",                   // plain text body
-            html: "<b>Hey there , please varify your email in order to login to our platform.<b>"
-                + "<br><br>https://kohaku-b.herokuapp.com/verifyemail/" + uid + ""
-                + "<p>kind Regards</><br><p>Air Food ✈️", // html body
+            text: "", // plain text body
+            html: "<b>Hey there , please varify your email in order to login to our platform.<b>" +
+                "<br><br>https://kohaku-b.herokuapp.com/verifyemail/" + uid + "" +
+                "<p>kind Regards</><br><p>Air Food ✈️", // html body
         });
         console.log(uid);
         console.log("Message sent: %s", info.messageId);
@@ -111,7 +112,7 @@ async function verifyEmail(uid, email) {
     }
 }
 
-function generatePdf(uuid, t_id, user_names, time_slot, _return, airport_name, seat, adults, children, amt, username, m) {
+function generatePdf(uuid, t_id, user_names, time_slot, return_time_slot, _return, airport_name, seat, adults, children, amt, username, m, mReturn) {
 
     // Create a document
     const doc = new PDFDocument();
@@ -127,16 +128,21 @@ function generatePdf(uuid, t_id, user_names, time_slot, _return, airport_name, s
 
     doc
         .fontSize(15)
-        .text("Booked by: " + username + "\nClass: " + user_names + "\nAirport Name: " + airport_name + "\nDeparture : " + time_slot + "\nTicket no: " + t_id + "\nSeat no: " + seat + "", 100, 200);
+        .text("Booked by: " + username + "\nClass: " + user_names + "\nAirport Name: " + airport_name + "\nDeparture : " + time_slot + "\nReturn : " + return_time_slot + "\nTicket no: " + t_id + "\nSeat no: " + seat + "", 100, 200);
 
     doc
         .fontSize(15)
-        .text("Adults: " + adults + "\nChildren: " + children + "\n\nAmount Total: R" + amt + "", 100, 300);
+        .text("Adults: " + adults + "\nChildren: " + children + "\n\nAmount Total: R" + amt + "", 100, 320);
+
 
     doc
         .fontSize(15)
-        .text("Selected Meals: \n" + m , 100, 400);
+        .text("Selected depart Meals: \n" + m, 100, 400);
 
+    doc
+        .fontSize(15)
+        .translate(0, 29)
+        .text("Selected Return Meals: \n" + mReturn)
 
 
 
@@ -165,7 +171,7 @@ app.post('/register', (req, res, next) => {
     var otp = uuid.v4().substr(0, 6);
     otp = otp.toUpperCase();
     try {
-        db.query('SELECT * FROM user WHERE email=?', [email], function (err, results, fields) {
+        db.query('SELECT * FROM user WHERE email=?', [email], function(err, results, fields) {
             if (err) {
                 console.log('MySQL ERROR', err);
             }
@@ -173,17 +179,15 @@ app.post('/register', (req, res, next) => {
                 res.send({ msg: 'User already exists!!!' });
                 console.log('User already exists!!!');
             } else {
-                db.query("INSERT INTO `user` (`id`, `uuid`, `created_at`, `updated_at`, `name`, `surname`, `email`, `salt`, `encrypted_password`, `one_time_pin`) VALUES (NULL, ?, NOW(), NOW(), ?, ?, ?, ?, ?, ?)",
-                    [uid, fname, lname, email, salt, password, otp], function (err, rows, fields) {
-                        if (err) {
-                            console.log('MySQL ERROR', err);
-                            res.send({ msg: "Could not register user", status: 1 });
-                        } else {
-                            verifyEmail(uid, email);
-                            res.send({ msg: "Succesfully Registered, Check your email to verify account in order to login", status: 0, rows: rows.length, data: rows });
-                        }
+                db.query("INSERT INTO `user` (`id`, `uuid`, `created_at`, `updated_at`, `name`, `surname`, `email`, `salt`, `encrypted_password`, `one_time_pin`) VALUES (NULL, ?, NOW(), NOW(), ?, ?, ?, ?, ?, ?)", [uid, fname, lname, email, salt, password, otp], function(err, rows, fields) {
+                    if (err) {
+                        console.log('MySQL ERROR', err);
+                        res.send({ msg: "Could not register user", status: 1 });
+                    } else {
+                        verifyEmail(uid, email);
+                        res.send({ msg: "Succesfully Registered, Check your email to verify account in order to login", status: 0, rows: rows.length, data: rows });
                     }
-                );
+                });
             }
         });
 
@@ -201,12 +205,12 @@ app.post('/login', (req, res, next) => {
     var email = post_data.email;
 
     try {
-        db.query('Select * From user Where email=?', [email], function (error, rows, fields) {
+        db.query('Select * From user Where email=?', [email], function(error, rows, fields) {
             if (error) {
                 console.log(error);
             }
             if (rows.length > 0 && rows[0].salt) {
-                var salt = rows[0].salt;//Getsalt from database
+                var salt = rows[0].salt; //Getsalt from database
                 var encrypted_password = rows[0].encrypted_password;
                 //hash password from login
                 var hashed_password = checkHashPassword(user_password, salt).passwordHash;
@@ -214,11 +218,11 @@ app.post('/login', (req, res, next) => {
                     if (rows[0].isVerified == 1) {
                         res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
                     } else
-                        if (rows[0].isVerified == 2) {
-                            res.send({ msg: "Account is Deactivated, Reactivate in order to login to the platform", status: 1 });
-                        } else {
-                            res.send({ msg: "Email not is verified, check your emails and verify", status: 2 });
-                        }
+                    if (rows[0].isVerified == 2) {
+                        res.send({ msg: "Account is Deactivated, Reactivate in order to login to the platform", status: 1 });
+                    } else {
+                        res.send({ msg: "Email not is verified, check your emails and verify", status: 2 });
+                    }
                 } else {
                     res.send({ msg: "Wrong password", status: 3 });
                 }
@@ -237,7 +241,7 @@ app.post('/login', (req, res, next) => {
 app.post('/getUser', (req, res, next) => {
     try {
         let user_id = req.body.uuid;
-        db.query('SELECT * FROM user WHERE uuid=?', [user_id], function (error, result, fields) {
+        db.query('SELECT * FROM user WHERE uuid=?', [user_id], function(error, result, fields) {
             if (result) {
                 res.send({ status: 0, msg: 'done', data: result });
             } else {
@@ -259,18 +263,16 @@ app.post('/update_password', (req, res, next) => {
     var salt = hash_data.salt; //get salt
 
     try {
-        db.query("UPDATE `user` SET `salt`=?,`encrypted_password`=? WHERE uuid = ?",
-            [salt, password, uuid], function (err, rows, fields) {
-                if (err) {
-                    //console.log('MySQL ERROR', err);
-                    res.send({ msg: "Could not change password", status: 1 });
-                } else if (rows.changedRows > 0) {
-                    res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
-                } else {
-                    res.send({ msg: "Could not change password", status: 1, data: rows });
-                }
+        db.query("UPDATE `user` SET `salt`=?,`encrypted_password`=? WHERE uuid = ?", [salt, password, uuid], function(err, rows, fields) {
+            if (err) {
+                //console.log('MySQL ERROR', err);
+                res.send({ msg: "Could not change password", status: 1 });
+            } else if (rows.changedRows > 0) {
+                res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+            } else {
+                res.send({ msg: "Could not change password", status: 1, data: rows });
             }
-        );
+        });
 
     } catch (err) {
         res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
@@ -287,18 +289,16 @@ app.get('/resetPassword/:email', (req, res, next) => {
     var salt = hash_data.salt; //get salt
 
 
-    db.query("UPDATE `user` SET `salt`=?,`encrypted_password`=? WHERE email = ?",
-        [salt, password, email], function (err, rows, fields) {
-            if (err) {
-                //console.log('MySQL ERROR', err);
-                res.send({ msg: "Could not change password", status: 1 });
-            } else if (rows.changedRows > 0) {
-                resetPass(email, plaint_password, res);
-            } else {
-                res.send({ msg: "Invalid email recieved or email not registered", status: 1, data: rows });
-            }
+    db.query("UPDATE `user` SET `salt`=?,`encrypted_password`=? WHERE email = ?", [salt, password, email], function(err, rows, fields) {
+        if (err) {
+            //console.log('MySQL ERROR', err);
+            res.send({ msg: "Could not change password", status: 1 });
+        } else if (rows.changedRows > 0) {
+            resetPass(email, plaint_password, res);
+        } else {
+            res.send({ msg: "Invalid email recieved or email not registered", status: 1, data: rows });
         }
-    );
+    });
 
 })
 
@@ -306,13 +306,13 @@ app.get('/resetPassword/:email', (req, res, next) => {
 app.get('/verifyemail/:uuid', (req, res, next) => {
     var uid = req.params.uuid;
     try {
-        db.query("SELECT * FROM user WHERE uuid = ?", [uid], function (err, rows1, fields) {
+        db.query("SELECT * FROM user WHERE uuid = ?", [uid], function(err, rows1, fields) {
             if (err) {
                 //console.log('MySQL ERROR', err);
                 res.send({ msg: "Could not verify password", status: 1 });
             }
             if (rows1.length > 0 && rows1[0].isVerified == 0) {
-                db.query("UPDATE `user` SET`isVerified` =? WHERE uuid = ?", [1, uid], function (err, rows, fields) {
+                db.query("UPDATE `user` SET`isVerified` =? WHERE uuid = ?", [1, uid], function(err, rows, fields) {
                     res.send({ msg: "<h1>Succesfully verified password</h1>" });
                 });
             } else {
@@ -329,7 +329,7 @@ app.get('/verifyemail/:uuid', (req, res, next) => {
 app.post('/delete_user', (req, res, next) => {
     var uid = req.body.uuid;
     try {
-        db.query("DELETE FROM `user` WHERE `user`.`uuid` = ?", [uid], function (err, rows, fields) {
+        db.query("DELETE FROM `user` WHERE `user`.`uuid` = ?", [uid], function(err, rows, fields) {
             if (err) {
                 //console.log('MySQL ERROR', err);
             }
@@ -358,16 +358,14 @@ app.post('/update_user', (req, res, next) => {
     var uid = req.body.uuid;
 
     try {
-        db.query("UPDATE `user` SET `updated_at`=NOW(),`name`=?,`surname`=?,`email`=?,`cell`=?,`gender`=?,`province`=? WHERE uuid = ?",
-            [fname, lname, email, cell, gender, province, uid], function (err, rows, fields) {
+        db.query("UPDATE `user` SET `updated_at`=NOW(),`name`=?,`surname`=?,`email`=?,`cell`=?,`gender`=?,`province`=? WHERE uuid = ?", [fname, lname, email, cell, gender, province, uid], function(err, rows, fields) {
 
-                if (rows && rows.affectedRows) {
-                    res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
-                } else {
-                    res.send({ msg: "Could not update user", status: 1, });
-                }
+            if (rows && rows.affectedRows) {
+                res.send({ msg: "Done", status: 0, rows: rows.length, data: rows });
+            } else {
+                res.send({ msg: "Could not update user", status: 1, });
             }
-        );
+        });
 
     } catch (err) {
         res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
@@ -385,9 +383,11 @@ app.post('/add_ticket', (req, res, next) => {
     var children = req.body.children;
     var adult_price = req.body.adult_price;
     var child_price = req.body.child_price;
-    var meals = JSON.parse(req.body.meals);
+    var DepartMeals = JSON.parse(req.body.DepartMeals);
+    var ReturnMeals = JSON.parse(req.body.ReturnMeals);
     var Class = req.body.Class;
     var time_slot = req.body.time_slot;
+    var return_time_slot = req.body.return_time_slot;
     var username = req.body.username;
     var totalAmt = req.body.totalAmt;
     var seat = getRandomArbitrary(1, 90);
@@ -403,45 +403,58 @@ app.post('/add_ticket', (req, res, next) => {
     }
     var names;
 
-    
-    try {
-        db.query("INSERT INTO `booking` (uuid,  `class`, `departure`, `destination`, `depart_date`, `return_date`, `total_amount`) VALUES (?,  ?, ?, ?, ?, ?, ?)",
-            [uuid, Class, from, to, depart.substr(0, 10), Return.substr(0, 10), totalAmt], function (err, rows0, fields) {
-                if (err) {
-                    console.log('MySQL ERROR', err);
-                }
-                if (rows0) {
-                    let t_id = rows0.insertId;
-                    depart = depart.substr(11, 5);
-                    Return = Return.substr(11, 5);
-                    let m = [];
 
-                    
-                    db.query("INSERT INTO `ticket` (ticket_id, uuid, `airport_name`, `flight_no`, `boarding_time`, `departure_time`, `seat`, ispaid) VALUES ( ?,  ?, ?, ?, ?, ?, ?, 0)",
-                        [t_id, uuid, from, 'A909', time_slot, time_slot, seat], function (error, result, fields) {
-                            if (result) {
-                                for (let index = 0; index < meals.length; index++) {
-                                    db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)",
-                                        [t_id, meals[index].meal.text, meals[index].qty.value, meals[index].meal.value, '', 0.0], function (error, result, fields) {
-                                            m.push(meals[index].meal.text + ' * ' + meals[index].qty.value + '\n');
-                                            if (index == meals.length-1) {
-                                                generatePdf(uuid, t_id, Class, time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt, username, m);
+    try {
+        db.query("INSERT INTO `booking` (uuid,  `class`, `departure`, `destination`, `depart_date`, `return_date`, `total_amount`) VALUES (?,  ?, ?, ?, ?, ?, ?)", [uuid, Class, from, to, depart.substr(0, 10), Return.substr(0, 10), totalAmt], function(err, rows0, fields) {
+            if (err) {
+                console.log('MySQL ERROR', err);
+            }
+            if (rows0) {
+                let t_id = rows0.insertId;
+                depart = depart.substr(11, 5);
+                Return = Return.substr(11, 5);
+                let m = [];
+                let mReturn = [];
+
+                var done = 0
+                db.query("INSERT INTO `ticket` (ticket_id, uuid, `airport_name`, `flight_no`, `boarding_time`, `departure_time`, `seat`, ispaid) VALUES ( ?,  ?, ?, ?, ?, ?, ?, 0)", [t_id, uuid, from, 'A909', time_slot, time_slot, seat], function(error, result, fields) {
+                    if (result) {
+                        for (let index = 0; index < DepartMeals.length; index++) {
+                            db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)", [t_id, DepartMeals[index].meal.text, DepartMeals[index].qty.value, DepartMeals[index].meal.value, '', 0.0], function(error, result, fields) {
+                                m.push(DepartMeals[index].meal.text + ' * ' + DepartMeals[index].qty.value + '\n');
+                                if (index == DepartMeals.length - 1) {
+                                    for (let index = 0; index < ReturnMeals.length; index++) {
+                                        db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)", [t_id, ReturnMeals[index].meal.text, ReturnMeals[index].qty.value, ReturnMeals[index].meal.value, '', 0.0], function(error, result, fields) {
+                                            mReturn.push(ReturnMeals[index].meal.text + ' * ' + ReturnMeals[index].qty.value + '\n');
+                                            if (index == ReturnMeals.length - 1) {
+                                                generatePdf(uuid, t_id, Class, time_slot, return_time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt, username, m, mReturn);
                                             }
-                                        }
-                                    );
+                                        });
+                                    }
                                 }
-                                res.send({ status: 0, msg: 'done', data: result, t_id: t_id });
-                            } else {
-                                res.send({ msg: 'Something went wrong' + err, status: 1 });
-                                console.log(error);
+                            });
+                        }
+                        if (DepartMeals.length == 0) {
+                            for (let index = 0; index < ReturnMeals.length; index++) {
+                                db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)", [t_id, ReturnMeals[index].meal.text, ReturnMeals[index].qty.value, ReturnMeals[index].meal.value, '', 0.0], function(error, result, fields) {
+                                    mReturn.push(ReturnMeals[index].meal.text + ' * ' + ReturnMeals[index].qty.value + '\n');
+                                    if (index == ReturnMeals.length - 1) {
+                                        generatePdf(uuid, t_id, Class, time_slot, return_time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt, username, m, mReturn);
+                                    }
+                                });
                             }
                         }
-                    );
-                } else {
-                    res.send({ msg: "Could not add ticket", status: 1, });
-                }
+
+                        res.send({ status: 0, msg: 'done', data: result, t_id: t_id });
+                    } else {
+                        res.send({ msg: 'Something went wrong' + err, status: 1 });
+                        console.log(error);
+                    }
+                });
+            } else {
+                res.send({ msg: "Could not add ticket", status: 1, });
             }
-        );
+        });
 
     } catch (err) {
         res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
@@ -451,16 +464,14 @@ app.post('/add_ticket', (req, res, next) => {
 //get all users
 app.post('/get_all_verrified_users', (req, res, next) => {
     try {
-        db.query("SELECT uuid,DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE isVerified=1",
-            [], function (err, rows, fields) {
+        db.query("SELECT uuid,DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE isVerified=1", [], function(err, rows, fields) {
 
-                if (rows) {
-                    res.send({ status: 0, msg: 'done', data: rows });
-                } else {
-                    res.send({ msg: "Could not add ticket", status: 1 });
-                }
+            if (rows) {
+                res.send({ status: 0, msg: 'done', data: rows });
+            } else {
+                res.send({ msg: "Could not add ticket", status: 1 });
             }
-        );
+        });
 
     } catch (err) {
         res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
@@ -469,17 +480,15 @@ app.post('/get_all_verrified_users', (req, res, next) => {
 })
 app.post('/get_all_nonverrified_users', (req, res, next) => {
     try {
-        db.query("SELECT uuid,DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE isVerified=0",
-            [], function (err, rows, fields) {
+        db.query("SELECT uuid,DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE isVerified=0", [], function(err, rows, fields) {
 
-                if (rows) {
-                    res.send({ status: 0, msg: 'done', data: rows });
-                } else {
-                    res.send({ msg: "Couldn't get all verified users", status: 1 });
-                    console.log(err);
-                }
+            if (rows) {
+                res.send({ status: 0, msg: 'done', data: rows });
+            } else {
+                res.send({ msg: "Couldn't get all verified users", status: 1 });
+                console.log(err);
             }
-        );
+        });
 
     } catch (err) {
         res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
@@ -488,33 +497,29 @@ app.post('/get_all_nonverrified_users', (req, res, next) => {
 app.post('/get_all_users_by_search', (req, res, next) => {
     var searchText = req.body.searchText;
     try {
-        db.query("SELECT uuid,DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at,  `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE `created_at` LIKE '%" + searchText + "%' OR `email` LIKE '%" + searchText + "%' OR role LIKE '%" + searchText + "%' ",
-            [], function (err, rows, fields) {
-                if (rows) {
-                    res.send({ status: 0, msg: 'done', data: rows });
-                } else {
-                    res.send({ msg: "Couldn't get all users by search", status: 1 });
-                    console.log(err);
-                }
+        db.query("SELECT uuid,DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at,  `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE `created_at` LIKE '%" + searchText + "%' OR `email` LIKE '%" + searchText + "%' OR role LIKE '%" + searchText + "%' ", [], function(err, rows, fields) {
+            if (rows) {
+                res.send({ status: 0, msg: 'done', data: rows });
+            } else {
+                res.send({ msg: "Couldn't get all users by search", status: 1 });
+                console.log(err);
             }
-        );
+        });
     } catch (err) {
         res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
     }
 })
 app.post('/get_all_users', (req, res, next) => {
     try {
-        db.query("SELECT uuid, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`,`gender`,`province`, `role`, `isVerified` FROM `user`",
-            [], function (err, rows, fields) {
+        db.query("SELECT uuid, DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`,`gender`,`province`, `role`, `isVerified` FROM `user`", [], function(err, rows, fields) {
 
-                if (rows) {
-                    res.send({ status: 0, msg: 'done', data: rows });
-                } else {
-                    res.send({ msg: "Couldn't get all users", status: 1 });
-                    console.log(err);
-                }
+            if (rows) {
+                res.send({ status: 0, msg: 'done', data: rows });
+            } else {
+                res.send({ msg: "Couldn't get all users", status: 1 });
+                console.log(err);
             }
-        );
+        });
 
     } catch (err) {
         res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
@@ -524,16 +529,14 @@ app.post('/register_admin', (req, res, next) => {
     var uuid = req.body.uuid;
     var ur = req.body.ur;
     try {
-        db.query("UPDATE `user` SET `role`='" + ur + "' WHERE uuid = ?",
-            [uuid], function (err, rows, fields) {
-                if (rows) {
-                    res.send({ status: 0, msg: 'done', data: rows });
-                } else {
-                    console.log(err);
-                    res.send({ msg: "Something went wrong", status: 1 });
-                }
+        db.query("UPDATE `user` SET `role`='" + ur + "' WHERE uuid = ?", [uuid], function(err, rows, fields) {
+            if (rows) {
+                res.send({ status: 0, msg: 'done', data: rows });
+            } else {
+                console.log(err);
+                res.send({ msg: "Something went wrong", status: 1 });
             }
-        );
+        });
 
     } catch (err) {
         res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
@@ -543,16 +546,14 @@ app.post('/get_user_tickets', (req, res, next) => {
     var searchText = req.body.searchText;
     var uuid = req.body.uuid;
     try {
-        db.query("SELECT * FROM `ticket` WHERE (boarding_time LIKE '%" + searchText + "%' OR airport_name LIKE '%" + searchText + "%' OR seat LIKE '%" + searchText + "%') AND uuid = '" + uuid + "' order by ticket_id desc",
-            [uuid], function (err, rows, fields) {
-                if (rows) {
-                    res.send({ status: 0, msg: 'done', data: rows });
-                } else {
-                    console.log(err);
-                    res.send({ msg: "Something went wrong", status: 1 });
-                }
+        db.query("SELECT * FROM `ticket` WHERE (boarding_time LIKE '%" + searchText + "%' OR airport_name LIKE '%" + searchText + "%' OR seat LIKE '%" + searchText + "%') AND uuid = '" + uuid + "' order by ticket_id desc", [uuid], function(err, rows, fields) {
+            if (rows) {
+                res.send({ status: 0, msg: 'done', data: rows });
+            } else {
+                console.log(err);
+                res.send({ msg: "Something went wrong", status: 1 });
             }
-        );
+        });
 
     } catch (err) {
         res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
@@ -569,16 +570,14 @@ app.post('/add_user_payment', (req, res, next) => {
     var ticket_id = req.body.ticket_id;
 
     try {
-        db.query("INSERT INTO `payment` ( `ticket_id`,  `payment_type`, `amount`, `card_number`, `cvv`, `expire_date`, `status`) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            [ticket_id, payment_type, amount, card_number, cvv, expire_date.substr(0, 10), status], function (err, rows, fields) {
-                if (rows) {
-                    res.send({ status: 0, msg: 'done', data: rows });
-                } else {
-                    console.log(err);
-                    res.send({ msg: "Something went wrong", status: 1 });
-                }
+        db.query("INSERT INTO `payment` ( `ticket_id`,  `payment_type`, `amount`, `card_number`, `cvv`, `expire_date`, `status`) VALUES (?, ?, ?, ?, ?, ?, ?)", [ticket_id, payment_type, amount, card_number, cvv, expire_date.substr(0, 10), status], function(err, rows, fields) {
+            if (rows) {
+                res.send({ status: 0, msg: 'done', data: rows });
+            } else {
+                console.log(err);
+                res.send({ msg: "Something went wrong", status: 1 });
             }
-        );
+        });
 
     } catch (err) {
         res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
@@ -590,7 +589,7 @@ app.get('/', (req, res, next) => {
     res.send({ msg: "Welcome to Kohaku!" });
 })
 
-app.get('/download/:filename', function (req, res) {
+app.get('/download/:filename', function(req, res) {
     let filename = req.params.filename;
     console.log(filename);
 
@@ -602,7 +601,7 @@ app.get('/download/:filename', function (req, res) {
 app.post('/activate_user', (req, res, next) => {
     var email = req.body.email;
     try {
-        db.query("SELECT `uuid` FROM user WHERE `user`.`email` = ?", [email], function (err, rows, fields) {
+        db.query("SELECT `uuid` FROM user WHERE `user`.`email` = ?", [email], function(err, rows, fields) {
             if (err) {
                 console.log('MySQL ERROR', err);
             }
@@ -613,26 +612,24 @@ app.post('/activate_user', (req, res, next) => {
             } else {
                 res.send({ msg: "Could not activate user", status: 1, });
             }
-        }
-        );
+        });
 
     } catch (err) {
         res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
     }
-}
-);
+});
 
 //verify email
 app.post('/deactivate_user', (req, res, next) => {
     var uid = req.body.uuid;
     try {
-        db.query("SELECT * FROM user WHERE uuid = ?", [uid], function (err, rows1, fields) {
+        db.query("SELECT * FROM user WHERE uuid = ?", [uid], function(err, rows1, fields) {
             if (err) {
                 console.log('MySQL ERROR', err);
                 res.send({ msg: "Could not verify password", status: 1 });
             }
             if (rows1.length > 0) {
-                db.query("UPDATE `user` SET`isVerified` =? WHERE uuid = ?", [2, uid], function (err, rows, fields) {
+                db.query("UPDATE `user` SET`isVerified` =? WHERE uuid = ?", [2, uid], function(err, rows, fields) {
                     res.send({ msg: "Succesfully Deactivated!", status: 0 });
                 });
             } else {
@@ -649,7 +646,7 @@ app.post('/deactivate_user', (req, res, next) => {
 app.post('/get_all_bookings', (req, res, next) => {
     var searchText = req.body.searchText;
     try {
-        db.query("SELECT COUNT(destination) as tickets, SUM(total_amount) as tot_amt, destination,DATE_FORMAT(depart_date,'%Y-%m-%d') as depart_date FROM booking WHERE destination LIKE '%" + searchText + "%' OR  depart_date LIKE '%" + searchText + "%' GROUP BY destination,  depart_date ORDER BY depart_date DESC", [], function (err, rows, fields) {
+        db.query("SELECT COUNT(destination) as tickets, SUM(total_amount) as tot_amt, destination,DATE_FORMAT(depart_date,'%Y-%m-%d') as depart_date FROM booking WHERE destination LIKE '%" + searchText + "%' OR  depart_date LIKE '%" + searchText + "%' GROUP BY destination,  depart_date ORDER BY depart_date DESC", [], function(err, rows, fields) {
             if (err) {
                 console.log('MySQL ERROR', err);
             }
@@ -659,18 +656,15 @@ app.post('/get_all_bookings', (req, res, next) => {
             } else {
                 res.send({ msg: "Could not get bookings", status: 1, });
             }
-        }
-        );
+        });
 
     } catch (err) {
         res.send({ msg: 'Something went wrong' + err, status: 2, err: err });
         console.log(err);
     }
-}
-);
+});
 
 //start server
 app.listen(port, () => {
     console.log('Server started on Port: ', port);
 });
-
