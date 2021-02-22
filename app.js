@@ -112,7 +112,7 @@ async function verifyEmail(uid, email) {
     }
 }
 
-function generatePdf(uuid, t_id, user_names, time_slot, return_time_slot, _return, airport_name, seat, adults, children, amt, username, m, mReturn) {
+function generatePdf(uuid, t_id, user_names, ReturnPdf, departPdf, time_slot, return_time_slot, _return, airport_name, seat, adults, children, amt, username, m, mReturn) {
 
     // Create a document
     const doc = new PDFDocument();
@@ -128,21 +128,25 @@ function generatePdf(uuid, t_id, user_names, time_slot, return_time_slot, _retur
 
     doc
         .fontSize(15)
-        .text("Booked by: " + username + "\nClass: " + user_names + "\nAirport Name: " + airport_name + "\nDeparture : " + time_slot + "\nReturn : " + return_time_slot + "\nTicket no: " + t_id + "\nSeat no: " + seat + "", 100, 200);
+        .text("Booked by: " + username + "\nClass: " + user_names + "\nAirport Name: " + airport_name + "\nDeparture Date: " + departPdf.substr(0, 10) + "\nReturn Date: " + ReturnPdf.substr(0, 10) + "\nDeparture Time: " + time_slot + "\nReturn Time: " + return_time_slot + "\nTicket no: " + t_id + "\nSeat no: " + seat + "", 100, 200);
 
     doc
         .fontSize(15)
-        .text("Adults: " + adults + "\nChildren: " + children + "\n\nAmount Total: R" + amt + "", 100, 320);
+        .text("Adults: " + adults + "\nChildren: " + children + "\n\nAmount Total: R" + amt + "", 100, 360);
 
+    if (m != "No Meals") {
+        doc
+            .fontSize(15)
+            .text("Selected depart Meals: \n" + m, 100, 435);
+    }
 
-    doc
-        .fontSize(15)
-        .text("Selected depart Meals: \n" + m, 100, 400);
+    if (mReturn != "No Meals") {
+        doc
+            .fontSize(15)
+            .translate(0, 29)
+            .text("Selected Return Meals: \n" + mReturn)
+    }
 
-    doc
-        .fontSize(15)
-        .translate(0, 29)
-        .text("Selected Return Meals: \n" + mReturn)
 
 
 
@@ -379,6 +383,8 @@ app.post('/add_ticket', (req, res, next) => {
     var to = req.body.to;
     var Return = req.body.Return;
     var depart = req.body.depart;
+    var departPdf = req.body.depart;
+    var ReturnPdf = req.body.Return;
     var adults = req.body.adults;
     var children = req.body.children;
     var adult_price = req.body.adult_price;
@@ -417,29 +423,47 @@ app.post('/add_ticket', (req, res, next) => {
                 let mReturn = [];
 
                 var done = 0
+                console.log(DepartMeals.length)
+                console.log(DepartMeals)
                 db.query("INSERT INTO `ticket` (ticket_id, uuid, `airport_name`, `flight_no`, `boarding_time`, `departure_time`, `seat`, ispaid) VALUES ( ?,  ?, ?, ?, ?, ?, ?, 0)", [t_id, uuid, from, 'A909', time_slot, time_slot, seat], function(error, result, fields) {
                     if (result) {
-                        for (let index = 0; index < DepartMeals.length; index++) {
-                            db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)", [t_id, DepartMeals[index].meal.text, DepartMeals[index].qty.value, DepartMeals[index].meal.value, '', 0.0], function(error, result, fields) {
-                                m.push(DepartMeals[index].meal.text + ' * ' + DepartMeals[index].qty.value + '\n');
-                                if (index == DepartMeals.length - 1) {
-                                    for (let index = 0; index < ReturnMeals.length; index++) {
-                                        db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)", [t_id, ReturnMeals[index].meal.text, ReturnMeals[index].qty.value, ReturnMeals[index].meal.value, '', 0.0], function(error, result, fields) {
-                                            mReturn.push(ReturnMeals[index].meal.text + ' * ' + ReturnMeals[index].qty.value + '\n');
-                                            if (index == ReturnMeals.length - 1) {
-                                                generatePdf(uuid, t_id, Class, time_slot, return_time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt, username, m, mReturn);
-                                            }
-                                        });
+
+                        if (DepartMeals.length == 0 && ReturnMeals.length == 0) {
+                            generatePdf(uuid, t_id, Class, ReturnPdf, departPdf, time_slot, return_time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt, username, "No meals", "No meals");
+
+                        } else if (DepartMeals.length != 0 && ReturnMeals.length != 0) {
+                            for (let index = 0; index < DepartMeals.length; index++) {
+                                db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)", [t_id, DepartMeals[index].meal.text, DepartMeals[index].qty.value, DepartMeals[index].meal.value, '', 0.0], function(error, result, fields) {
+                                    m.push(DepartMeals[index].meal.text + ' * ' + DepartMeals[index].qty.value + '\n');
+                                    if (index == DepartMeals.length - 1) {
+                                        for (let index = 0; index < ReturnMeals.length; index++) {
+                                            db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)", [t_id, ReturnMeals[index].meal.text, ReturnMeals[index].qty.value, ReturnMeals[index].meal.value, '', 0.0], function(error, result, fields) {
+                                                mReturn.push(ReturnMeals[index].meal.text + ' * ' + ReturnMeals[index].qty.value + '\n');
+                                                if (index == ReturnMeals.length - 1) {
+                                                    generatePdf(uuid, t_id, Class, ReturnPdf, departPdf, time_slot, return_time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt, username, m, mReturn);
+                                                }
+                                            });
+                                        }
                                     }
-                                }
-                            });
-                        }
-                        if (DepartMeals.length == 0) {
+                                });
+                            }
+                        } else if (DepartMeals.length != 0 && ReturnMeals.length == 0) {
+
+                            for (let index = 0; index < DepartMeals.length; index++) {
+                                db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)", [t_id, DepartMeals[index].meal.text, DepartMeals[index].qty.value, DepartMeals[index].meal.value, '', 0.0], function(error, result, fields) {
+                                    m.push(DepartMeals[index].meal.text + ' * ' + DepartMeals[index].qty.value + '\n');
+                                    if (index == DepartMeals.length - 1) {
+                                        generatePdf(uuid, t_id, Class, ReturnPdf, departPdf, time_slot, return_time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt, username, m, "No Meals");
+
+                                    }
+                                });
+                            }
+                        } else if (DepartMeals.length == 0 && ReturnMeals.length != 0) {
                             for (let index = 0; index < ReturnMeals.length; index++) {
                                 db.query("INSERT INTO `meal` ( `t_id`, `meal_type`, `qty`, `meal_price`, `bev_type`, `bev_price`) VALUES ( ?, ?, ?, ?, ?, ?)", [t_id, ReturnMeals[index].meal.text, ReturnMeals[index].qty.value, ReturnMeals[index].meal.value, '', 0.0], function(error, result, fields) {
                                     mReturn.push(ReturnMeals[index].meal.text + ' * ' + ReturnMeals[index].qty.value + '\n');
                                     if (index == ReturnMeals.length - 1) {
-                                        generatePdf(uuid, t_id, Class, time_slot, return_time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt, username, m, mReturn);
+                                        generatePdf(uuid, t_id, Class, ReturnPdf, departPdf, time_slot, return_time_slot, Return, from.substr(0, from.length - 3) + ' International Airport', seat, adults, children, totalAmt, username, "No Meals", mReturn);
                                     }
                                 });
                             }
