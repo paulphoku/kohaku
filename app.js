@@ -125,7 +125,6 @@ function generatePdf(uuid, t_id, user_names, time_slot, _return, airport_name, s
     doc
         .fontSize(30)
         .text('Air Food: Ticket!\n\n', 100, 100);
-
     doc
         .fontSize(15)
         .text("Booked by: " + username + "\nClass: " + user_names + "\nAirport Name: " + airport_name + "\nDeparture : " + time_slot + "\nTicket no: " + t_id + "\nSeat no: " + seat + "", 100, 200);
@@ -454,6 +453,7 @@ app.post('/get_all_verrified_users', (req, res, next) => {
     try {
         db.query("SELECT uuid,DATE_FORMAT(created_at,'%Y-%m-%d')  AS created_at, `email`, `gender`, `province`, `role`,  `isVerified` FROM `user` WHERE isVerified=1",
             [], function (err, rows, fields) {
+                if(err){console.log(err)}
 
                 if (rows) {
                     res.send({ status: 0, msg: 'done', data: rows });
